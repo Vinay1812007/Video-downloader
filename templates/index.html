@@ -12,17 +12,100 @@
         input { width: 90%; padding: 12px; margin-bottom: 15px; border: none; border-radius: 8px; background: #333; color: white; font-size: 16px; }
         button { width: 100%; padding: 12px; background: #ff0033; color: white; border: none; border-radius: 8px; font-weight: bold; font-size: 16px; cursor: pointer; transition: 0.3s; }
         button:hover { background: #cc0029; }
-        .note { margin-top: 20px; font-size: 12px; color: #888; }
+        #status { margin-top: 15px; font-size: 13px; min-height: 20px; word-wrap: break-word; color: #aaa; }
+        .loader { border: 3px solid #333; border-top: 3px solid #ff0033; border-radius: 50%; width: 20px; height: 20px; animation: spin 1s linear infinite; display: none; margin: 10px auto; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        a.download-btn { display: block; margin-top: 15px; padding: 12px; background: #00ff88; color: #1a1a1a; text-decoration: none; border-radius: 5px; font-weight: bold; }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>You<span>Tube</span> & Insta</h1>
-        <form action="/download" method="post">
-            <input type="text" name="url" placeholder="Paste YouTube or Insta Link..." required>
-            <button type="submit">Download</button>
+        
+        <form id="mainForm" action="/download" method="post">
+            <input type="text" id="url" name="url" placeholder="Paste Link Here..." required>
+            <button type="button" onclick="processLink()">Download Now</button>
         </form>
-        <p class="note">YouTube uses Piped Network. Insta uses Stealth Mode.</p>
+        
+        <div class="loader" id="loader"></div>
+        <div id="status"></div>
     </div>
+
+    <script>
+        async function processLink() {
+            const url = document.getElementById('url').value;
+            const status = document.getElementById('status');
+            const loader = document.getElementById('loader');
+            const form = document.getElementById('mainForm');
+
+            if (!url) { status.innerText = "Please paste a link first!"; return; }
+
+            // 1. IF YOUTUBE: Use Client-Side Logic (Bypasses Render Block)
+            if (url.includes('youtube.com') || url.includes('youtu.be')) {
+                console.log("YouTube detected. Using Client-Side Engine.");
+                status.innerText = "Processing YouTube link...";
+                loader.style.display = "block";
+                
+                // Try Cobalt API via CORS Proxy (Tunneling)
+                const success = await tryCobalt(url);
+                
+                loader.style.display = "none";
+                if (!success) {
+                    status.innerHTML = "<span style='color:red'>Failed. YouTube is blocking strict. Try again later.</span>";
+                }
+            } 
+            // 2. IF INSTAGRAM/OTHER: Use Server-Side Python (Working)
+            else {
+                console.log("Instagram detected. Sending to Server.");
+                status.innerText = "Processing on Server...";
+                form.submit();
+            }
+        }
+
+        async function tryCobalt(videoUrl) {
+            const status = document.getElementById('status');
+            
+            // List of Proxies + APIs to try (The "Swarm")
+            // These allow us to bypass the browser's security blocks
+            const tunnels = [
+                "https://corsproxy.io/?https://co.wuk.sh/api/json",
+                "https://api.allorigins.win/raw?url=https://cobalt.steamship.site/api/json",
+                "https://corsproxy.io/?https://cobalt-api.ayo.tf/api/json"
+            ];
+
+            for (let api of tunnels) {
+                try {
+                    status.innerText = "Trying server...";
+                    const response = await fetch(api, {
+                        method: 'POST',
+                        headers: {
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json',
+                            'Origin': 'https://cobalt.tools' // Fake Header
+                        },
+                        body: JSON.stringify({
+                            url: videoUrl,
+                            filenamePattern: "basic"
+                        })
+                    });
+
+                    const data = await response.json();
+                    
+                    if (data.url) {
+                        status.innerHTML = `<a href="${data.url}" target="_blank" class="download-btn">Click to Save Video</a>`;
+                        return true;
+                    } else if (data.picker) {
+                        status.innerHTML = `<a href="${data.picker[0].url}" target="_blank" class="download-btn">Click to Save Video</a>`;
+                        return true;
+                    }
+                } catch (e) {
+                    console.log("Tunnel failed:", e);
+                    continue; // Try next tunnel
+                }
+            }
+            return false;
+        }
+    </script>
 </body>
-</html>
+    </html>
+    
