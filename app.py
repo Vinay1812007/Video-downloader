@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, send_file, after_this_request
+from flask import Flask, render_template, request, send_file, after_this_request, redirect
 import yt_dlp
 import os
 import glob
@@ -19,15 +19,16 @@ def home():
 def download_video():
     video_url = request.form['url']
     
-    # Safety Check: If user hits "Enter" on a YouTube link, tell them to click the button.
+    # 1. YOUTUBE SAFE MODE
+    # If a user accidentally hits "Enter" instead of the button, we handle it safely.
     if "youtube.com" in video_url or "youtu.be" in video_url:
-        return "Error: For YouTube, please click the 'Download Video' button on the screen. Do not use the enter key."
+        # Redirect to a working Cobalt instance that handles YouTube perfectly
+        return redirect(f"https://cobalt.kwiatekmiki.pl/?url={video_url}")
 
-    # INSTAGRAM/TIKTOK ENGINE (Stealth Mode)
-    # This runs on the server because Instagram blocks browsers, but not servers (yet).
+    # 2. INSTAGRAM/TIKTOK ENGINE (The Python Logic that worked before)
     ua = UserAgent()
     random_ua = ua.random
-    print(f"Processing Insta: {video_url}")
+    print(f"Processing Insta/Other: {video_url}")
 
     try:
         cleanup_downloads()
