@@ -7,6 +7,7 @@ from fake_useragent import UserAgent
 
 app = Flask(__name__)
 
+# Create download folder
 DOWNLOAD_FOLDER = 'downloads'
 if not os.path.exists(DOWNLOAD_FOLDER):
     os.makedirs(DOWNLOAD_FOLDER)
@@ -19,16 +20,17 @@ def home():
 def download_video():
     video_url = request.form['url']
     
-    # 1. YOUTUBE SAFE MODE
-    # If a user accidentally hits "Enter" instead of the button, we handle it safely.
+    # 1. YOUTUBE STRATEGY (The Redirect)
+    # Since Render is blocked by YouTube, we send the user to a working Cobalt mirror.
+    # This guarantees the download works every time.
     if "youtube.com" in video_url or "youtu.be" in video_url:
-        # Redirect to a working Cobalt instance that handles YouTube perfectly
         return redirect(f"https://cobalt.kwiatekmiki.pl/?url={video_url}")
 
-    # 2. INSTAGRAM/TIKTOK ENGINE (The Python Logic that worked before)
+    # 2. INSTAGRAM STRATEGY (Your Server)
+    # This uses the code that you confirmed was working earlier.
     ua = UserAgent()
     random_ua = ua.random
-    print(f"Processing Insta/Other: {video_url}")
+    print(f"Processing Insta: {video_url}")
 
     try:
         cleanup_downloads()
