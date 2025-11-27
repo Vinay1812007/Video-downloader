@@ -38,17 +38,13 @@
             loader.style.display = "block";
 
             try {
-                // Using a public Cobalt instance (bypasses Render block)
-                const response = await fetch('https://api.cobalt.tools/api/json', {
+                // Request sent to YOUR internal server (Fixed Connection Error)
+                const response = await fetch('/api/process', {
                     method: 'POST',
                     headers: {
-                        'Accept': 'application/json',
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({
-                        url: url,
-                        vQuality: "720"
-                    })
+                    body: JSON.stringify({ url: url })
                 });
 
                 const data = await response.json();
@@ -57,15 +53,14 @@
                 if (data.url) {
                     status.innerHTML = `<a href="${data.url}" target="_blank" class="download-btn">Click to Save Video</a>`;
                 } else if (data.picker) {
-                    // Sometimes it returns multiple items (like an album)
                     status.innerHTML = `<a href="${data.picker[0].url}" target="_blank" class="download-btn">Click to Save Video</a>`;
                 } else {
-                    status.innerText = "Error: Could not find video. Try a different link.";
+                    status.innerText = "Error: Video not found or link invalid.";
                 }
 
             } catch (error) {
                 loader.style.display = "none";
-                status.innerText = "Connection Failed. Try again.";
+                status.innerText = "Server Error. Try again.";
                 console.error(error);
             }
         }
