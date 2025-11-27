@@ -16,6 +16,7 @@
         .loader { border: 3px solid #333; border-top: 3px solid #ff0033; border-radius: 50%; width: 20px; height: 20px; animation: spin 1s linear infinite; display: none; margin: 10px auto; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         a.download-btn { display: block; margin-top: 15px; padding: 12px; background: #00ff88; color: #1a1a1a; text-decoration: none; border-radius: 5px; font-weight: bold; }
+        .server-tag { font-size: 10px; color: #666; margin-top: 5px; }
     </style>
 </head>
 <body>
@@ -24,7 +25,7 @@
         
         <form id="mainForm" action="/download" method="post">
             <input type="text" id="url" name="url" placeholder="Paste Link Here..." required>
-            <button type="button" onclick="processLink()">Download Now</button>
+            <button type="button" onclick="processLink()">Download Video</button>
         </form>
         
         <div class="loader" id="loader"></div>
@@ -32,6 +33,25 @@
     </div>
 
     <script>
+        // THE SWARM: Massive list of public APIs to try
+        const SWARM_APIS = [
+            "https://pipedapi.kavin.rocks",
+            "https://api.piped.privacy.com.de",
+            "https://pipedapi.drgns.space",
+            "https://pipedapi.tokhmi.xyz",
+            "https://api.piped.sakurajima.moe",
+            "https://pipedapi.smnz.de",
+            "https://pipedapi.adminforge.de",
+            "https://api.piped.projectsegfau.lt",
+            "https://inv.nadeko.net",
+            "https://invidious.drgns.space",
+            "https://vid.puffyan.us",
+            "https://inv.tux.pizza",
+            "https://invidious.flokinet.to",
+            "https://yt.artemislena.eu",
+            "https://invidious.private.coffee"
+        ];
+
         async function processLink() {
             const url = document.getElementById('url').value;
             const status = document.getElementById('status');
@@ -40,71 +60,77 @@
 
             if (!url) { status.innerText = "Please paste a link first!"; return; }
 
-            // 1. IF YOUTUBE: Use Client-Side Logic (Bypasses Render Block)
+            // 1. YOUTUBE HANDLER (Client-Side Swarm)
             if (url.includes('youtube.com') || url.includes('youtu.be')) {
-                console.log("YouTube detected. Using Client-Side Engine.");
-                status.innerText = "Processing YouTube link...";
+                status.innerText = "Connecting to Swarm Network...";
                 loader.style.display = "block";
                 
-                // Try Cobalt API via CORS Proxy (Tunneling)
-                const success = await tryCobalt(url);
+                const videoId = extractVideoId(url);
+                if (!videoId) {
+                    status.innerText = "Invalid YouTube Link";
+                    loader.style.display = "none";
+                    return;
+                }
+
+                // Try to find a working server
+                const link = await findWorkingLink(videoId);
                 
                 loader.style.display = "none";
-                if (!success) {
-                    status.innerHTML = "<span style='color:red'>Failed. YouTube is blocking strict. Try again later.</span>";
+                if (link) {
+                    status.innerHTML = `<a href="${link.url}" target="_blank" class="download-btn">Click to Save (${link.quality})</a><div class="server-tag">Source: ${link.source}</div>`;
+                } else {
+                    status.innerHTML = "<span style='color:red'>All servers busy. Try again in 1 min.</span>";
                 }
             } 
-            // 2. IF INSTAGRAM/OTHER: Use Server-Side Python (Working)
+            // 2. INSTAGRAM HANDLER (Server-Side)
             else {
-                console.log("Instagram detected. Sending to Server.");
-                status.innerText = "Processing on Server...";
+                status.innerText = "Processing Instagram...";
                 form.submit();
             }
         }
 
-        async function tryCobalt(videoUrl) {
+        async function findWorkingLink(videoId) {
             const status = document.getElementById('status');
             
-            // List of Proxies + APIs to try (The "Swarm")
-            // These allow us to bypass the browser's security blocks
-            const tunnels = [
-                "https://corsproxy.io/?https://co.wuk.sh/api/json",
-                "https://api.allorigins.win/raw?url=https://cobalt.steamship.site/api/json",
-                "https://corsproxy.io/?https://cobalt-api.ayo.tf/api/json"
-            ];
-
-            for (let api of tunnels) {
+            // Loop through all servers in the list
+            for (let api of SWARM_APIS) {
                 try {
-                    status.innerText = "Trying server...";
-                    const response = await fetch(api, {
-                        method: 'POST',
-                        headers: {
-                            'Accept': 'application/json',
-                            'Content-Type': 'application/json',
-                            'Origin': 'https://cobalt.tools' // Fake Header
-                        },
-                        body: JSON.stringify({
-                            url: videoUrl,
-                            filenamePattern: "basic"
-                        })
-                    });
-
-                    const data = await response.json();
+                    // We use 'allorigins' as a proxy to bypass CORS blocks
+                    const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(api + '/streams/' + videoId)}`;
                     
-                    if (data.url) {
-                        status.innerHTML = `<a href="${data.url}" target="_blank" class="download-btn">Click to Save Video</a>`;
-                        return true;
-                    } else if (data.picker) {
-                        status.innerHTML = `<a href="${data.picker[0].url}" target="_blank" class="download-btn">Click to Save Video</a>`;
-                        return true;
+                    const response = await fetch(proxyUrl);
+                    const wrapper = await response.json();
+                    
+                    // Allorigins returns the real data inside 'contents'
+                    if (wrapper.status?.http_code && wrapper.status.http_code !== 200) continue;
+                    
+                    const data = JSON.parse(wrapper.contents);
+
+                    // Check if it's a Piped API response
+                    if (data.videoStreams) {
+                        // Find the best MP4
+                        const best = data.videoStreams.find(s => s.format === 'MPEG-4' && !s.videoOnly);
+                        if (best) return { url: best.url, quality: best.quality, source: api };
                     }
+                    // Check if it's an Invidious API response
+                    else if (data.formatStreams) {
+                        const best = data.formatStreams.find(s => s.container === 'mp4' && s.resolution.includes('720'));
+                        if (best) return { url: best.url, quality: '720p', source: api };
+                    }
+
                 } catch (e) {
-                    console.log("Tunnel failed:", e);
-                    continue; // Try next tunnel
+                    continue; // Fail silently and try next server
                 }
             }
-            return false;
+            return null;
+        }
+
+        function extractVideoId(url) {
+            const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+            const match = url.match(regExp);
+            return (match && match[2].length === 11) ? match[2] : null;
         }
     </script>
 </body>
-</html>
+    </html>
+    
