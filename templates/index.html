@@ -11,74 +11,17 @@
         input { width: 90%; padding: 12px; margin-bottom: 15px; border: none; border-radius: 8px; background: #333; color: white; font-size: 16px; }
         button { width: 100%; padding: 12px; background: #00ff88; color: #1a1a1a; border: none; border-radius: 8px; font-weight: bold; font-size: 16px; cursor: pointer; transition: 0.3s; }
         button:hover { background: #00cc6a; }
-        #status { margin-top: 15px; font-size: 14px; min-height: 20px; word-wrap: break-word; }
-        .loader { border: 3px solid #f3f3f3; border-top: 3px solid #00ff88; border-radius: 50%; width: 20px; height: 20px; animation: spin 1s linear infinite; display: none; margin: 10px auto; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        a.download-btn { display: block; margin-top: 15px; padding: 12px; background: #3498db; color: white; text-decoration: none; border-radius: 5px; font-weight: bold; }
-        .error { color: #ff5555; background: rgba(255, 85, 85, 0.1); padding: 10px; border-radius: 5px; margin-top: 10px; font-size: 13px;}
+        .note { margin-top: 20px; font-size: 12px; color: #888; }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>All-in-One Saver</h1>
-        <input type="text" id="url" placeholder="Paste Link (Insta, TikTok, YT)...">
-        <button onclick="download()">Download Now</button>
-        <div class="loader" id="loader"></div>
-        <div id="status"></div>
+        <form action="/download" method="post">
+            <input type="text" name="url" placeholder="Paste Instagram Link..." required>
+            <button type="submit">Download</button>
+        </form>
+        <p class="note">Works best for: Instagram, Twitter/X, Facebook.</p>
     </div>
-
-    <script>
-        async function download() {
-            const urlInput = document.getElementById('url').value;
-            const status = document.getElementById('status');
-            const loader = document.getElementById('loader');
-            
-            if (!urlInput) { status.innerText = "Please paste a link first!"; return; }
-
-            status.innerHTML = "";
-            loader.style.display = "block";
-
-            // 1. The Target Server (Official Cobalt)
-            const targetApi = "https://co.wuk.sh/api/json";
-            
-            // 2. The Tunnel (CORS Proxy) - This routes the request via a neutral server
-            // Note: We use 'corsproxy.io' to bypass the browser security block
-            const proxy = "https://corsproxy.io/?";
-
-            try {
-                const response = await fetch(proxy + targetApi, {
-                    method: 'POST',
-                    headers: {
-                        'Accept': 'application/json',
-                        'Content-Type': 'application/json',
-                        // These headers trick the server
-                        'Origin': 'https://cobalt.tools', 
-                        'Referer': 'https://cobalt.tools/'
-                    },
-                    body: JSON.stringify({
-                        url: urlInput,
-                        filenamePattern: "basic"
-                    })
-                });
-
-                const data = await response.json();
-                loader.style.display = "none";
-
-                if (data.url) {
-                    status.innerHTML = `<a href="${data.url}" target="_blank" class="download-btn">Click to Save Video</a>`;
-                } else if (data.picker) {
-                    status.innerHTML = `<a href="${data.picker[0].url}" target="_blank" class="download-btn">Click to Save Video</a>`;
-                } else {
-                    const errorMsg = data.text || "Unknown error";
-                    status.innerHTML = `<div class="error">⚠️ ${errorMsg}</div>`;
-                }
-
-            } catch (error) {
-                loader.style.display = "none";
-                status.innerHTML = `<div class="error">Connection Failed. <br>The Proxy might be busy. Try again in 10s.</div>`;
-                console.error(error);
-            }
-        }
-    </script>
 </body>
 </html>
