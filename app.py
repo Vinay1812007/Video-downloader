@@ -4,7 +4,6 @@ import os
 import glob
 import time
 import requests
-import random
 from fake_useragent import UserAgent
 
 app = Flask(__name__)
@@ -13,17 +12,15 @@ DOWNLOAD_FOLDER = 'downloads'
 if not os.path.exists(DOWNLOAD_FOLDER):
     os.makedirs(DOWNLOAD_FOLDER)
 
-# MASSIVE LIST OF YOUTUBE PROXIES (Piped Network)
-# If one is busy, we instantly try the next.
-PIPED_SERVERS = [
-    "https://pipedapi.kavin.rocks",          # Official (Fastest)
-    "https://api.piped.privacy.com.de",      # Europe Strong
-    "https://pipedapi.drgns.space",          # US Backup
-    "https://api.piped.sakurajima.moe",      # Asia Backup
-    "https://pipedapi.tokhmi.xyz",           # Reliable
-    "https://api.piped.projectsegfau.lt",    # Secure
-    "https://pipedapi.smnz.de",              # German Server
-    "https://pipedapi.adminforge.de"         # Backup
+# NEW LIST: INVIDIOUS SERVERS (More stable than Piped)
+# These servers proxy the video for you.
+INVIDIOUS_SERVERS = [
+    "https://inv.nadeko.net",          # Very Fast
+    "https://invidious.drgns.space",   # Reliable
+    "https://yewtu.be",                # The Original (Netherlands)
+    "https://invidious.flokinet.to",   # Secure
+    "https://vid.puffyan.us",          # Backup
+    "https://inv.tux.pizza"            # Backup
 ]
 
 @app.route('/')
@@ -34,17 +31,16 @@ def home():
 def download_video():
     video_url = request.form['url']
     
-    # 1. YOUTUBE HANDLER (Piped Proxy Network)
+    # 1. YOUTUBE HANDLER (Using Invidious API)
     if "youtube.com" in video_url or "youtu.be" in video_url:
-        return download_youtube_via_proxy(video_url)
+        return download_youtube_invidious(video_url)
 
-    # 2. INSTAGRAM/TIKTOK HANDLER (Stealth Mode)
+    # 2. INSTAGRAM/TIKTOK HANDLER (Your working Stealth Mode)
     return download_standard(video_url)
 
-def download_youtube_via_proxy(url):
+def download_youtube_invidious(url):
     """
-    Tries 8 different servers to find a working link.
-    If all fail, sends user to a Watch Page (Fail-Safe).
+    Uses Invidious API to find a direct video stream.
     """
     try:
         # Extract Video ID safely
@@ -57,31 +53,41 @@ def download_youtube_via_proxy(url):
             video_id = url.split("shorts/")[1].split("?")[0]
             
         if not video_id:
-            return "Error: Bad Link. Could not find Video ID."
+            return "Error: Could not find YouTube Video ID."
 
-        print(f"YouTube ID: {video_id}. Hunting for a working server...")
+        print(f"YouTube ID: {video_id}. Switching to Invidious Network...")
 
-        # Loop through ALL servers in the list
-        for api_base in PIPED_SERVERS:
+        # Loop through Invidious servers
+        for api_base in INVIDIOUS_SERVERS:
             try:
-                # Ask server for video info
-                print(f"Trying {api_base}...")
-                resp = requests.get(f"{api_base}/streams/{video_id}", timeout=6)
+                # API Call to get video details
+                print(f"Checking {api_base}...")
+                api_url = f"{api_base}/api/v1/videos/{video_id}"
+                resp = requests.get(api_url, timeout=10)
                 
                 if resp.status_code == 200:
                     data = resp.json()
-                    # Look for the best MP4 stream
-                    for stream in data['videoStreams']:
-                        if stream['format'] == 'MPEG-4' and not stream['videoOnly']:
-                            print(f"Success! Redirecting using {api_base}")
-                            return redirect(stream['url'])
-            except:
-                continue # If this server fails, try the next one instantly
+                    
+                    # 1. Try to find a nice MP4 (720p or 360p)
+                    for stream in data.get('formatStreams', []):
+                        # Look for mp4 with audio
+                        if stream['container'] == 'mp4' and 'resolution' in stream:
+                            # Verify resolution is good (not 144p)
+                            if '720p' in stream['resolution'] or '360p' in stream['resolution']:
+                                print(f"Found stream on {api_base}")
+                                return redirect(stream['url'])
+                                
+                    # 2. If no formatStreams, try the "Latest Version" shortcut
+                    # This is a special link that forces a download
+                    return redirect(f"{api_base}/latest_version?id={video_id}&itag=22")
 
-        # FAIL-SAFE: If ALL 8 servers fail, send user to a Piped Watch Page
-        # They can watch/download manually from there.
-        print("All APIs busy. Activating Fail-Safe.")
-        return redirect(f"https://piped.video/watch?v={video_id}")
+            except Exception as e:
+                print(f"Server {api_base} failed: {e}")
+                continue 
+
+        # FAIL-SAFE: If APIs fail, send to the "Yewtu.be" watch page
+        # This page usually works even when APIs are strict
+        return redirect(f"https://yewtu.be/watch?v={video_id}")
 
     except Exception as e:
         return f"System Error: {str(e)}"
@@ -101,7 +107,6 @@ def download_standard(url):
             'format': 'best',
             'noplaylist': True,
             'http_headers': { 'User-Agent': random_ua },
-            # Instagram Fixes
             'extractor_args': { 'youtube': { 'player_client': ['android', 'web'] }}
         }
 
