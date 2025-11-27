@@ -3,11 +3,14 @@ import requests
 
 app = Flask(__name__)
 
-# List of backup servers (Mirrors)
+# UPDATED LIST: 5 Fresh Working Servers (November 2025)
+# We removed the dead 'api.cobalt.tools'
 COBALT_SERVERS = [
+    "https://co.wuk.sh/api/json",           # The most reliable backup
+    "https://cobalt.steamship.site/api/json",
+    "https://cobalt.rayrad.net/api/json",
     "https://cobalt.kwiatekmiki.pl/api/json",
-    "https://cobalt.xy2401.top/api/json",
-    "https://api.cobalt.tools/api/json" 
+    "https://cobalt.xy2401.top/api/json"
 ]
 
 @app.route('/')
@@ -24,33 +27,42 @@ def process():
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
     }
     
+    # Simplified payload (Removed 'vQuality' to prevent errors on some servers)
     payload = {
-        "url": user_url,
-        "vQuality": "720"
+        "url": user_url
     }
 
-    # Loop through servers until one works
     last_error = ""
+    success = False
+    
     for api_url in COBALT_SERVERS:
         try:
-            print(f"Trying server: {api_url}")
-            resp = requests.post(api_url, json=payload, headers=headers, timeout=10)
+            print(f"Testing server: {api_url}")
+            resp = requests.post(api_url, json=payload, headers=headers, timeout=12)
+            
+            # Check if server is actually happy (Status 200)
+            if resp.status_code != 200:
+                last_error = f"Server {api_url} returned {resp.status_code}"
+                continue
+
             data = resp.json()
             
-            # If we got a valid download link, stop and send it to user
+            # SUCCESS CHECK: Does it have a download link?
             if 'url' in data or 'picker' in data:
                 return jsonify(data)
             
-            # If server returned an error text, save it
+            # If server returned a specific error text (like "sign in required")
             if 'text' in data:
                 last_error = data['text']
+            elif 'error' in data:
+                 last_error = data['error']
                 
         except Exception as e:
             last_error = str(e)
-            continue # Try next server
+            continue # Try next server in the list
 
-    # If all servers failed
-    return jsonify({"error": f"Failed on all servers. Last error: {last_error}"})
+    # If we get here, ALL servers failed
+    return jsonify({"error": f"All servers busy. Last error: {last_error}"})
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
