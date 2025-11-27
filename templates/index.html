@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Universal Downloader</title>
+    <title>Video Downloader</title>
     <style>
         body { font-family: sans-serif; background: #121212; color: white; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
         .container { background: #1e1e1e; padding: 2rem; border-radius: 15px; width: 90%; max-width: 400px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
@@ -21,32 +21,23 @@
         
         <form id="mainForm" action="/download" method="post">
             <input type="text" id="url" name="url" placeholder="Paste Link Here..." required>
-            <button type="button" onclick="processLink()">Download Video</button>
+            <button type="submit" onclick="showStatus()">Download Video</button>
         </form>
         
         <div id="status"></div>
     </div>
 
     <script>
-        function processLink() {
+        function showStatus() {
             const url = document.getElementById('url').value;
-            const form = document.getElementById('mainForm');
             const status = document.getElementById('status');
-
-            if (!url) { status.innerText = "Please paste a link first!"; return; }
-
-            // 1. YOUTUBE STRATEGY: Direct Redirect
-            // Since Render is blocked, we send the user to a working instance directly.
-            if (url.includes('youtube.com') || url.includes('youtu.be')) {
-                status.innerText = "Opening Secure Downloader...";
-                // This mirror is stable and works on mobile
-                window.location.href = `https://cobalt.kwiatekmiki.pl/?url=${encodeURIComponent(url)}`;
-            } 
-            // 2. INSTAGRAM STRATEGY: Your Server
-            // Use the Python code that we know works.
-            else {
-                status.innerText = "Downloading from Instagram...";
-                form.submit();
+            
+            if(url) {
+                if(url.includes('youtube') || url.includes('youtu.be')) {
+                    status.innerText = "Redirecting to Secure Server...";
+                } else {
+                    status.innerText = "Downloading from Instagram...";
+                }
             }
         }
     </script>
