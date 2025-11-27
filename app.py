@@ -3,12 +3,11 @@ import requests
 
 app = Flask(__name__)
 
-# UPDATED LIST (Verified Working November 2025)
-# These are the strongest community servers currently online.
+# THE BIG 3: The most reliable servers as of Late 2025
 COBALT_SERVERS = [
-    "https://co.wuk.sh/api/json",             # The #1 most reliable server (Official Wukko)
-    "https://cobalt.steamship.site/api/json", # Strong Backup
-    "https://cobalt-api.ayo.tf/api/json"      # Backup
+    "https://cobalt.steamship.site/api/json",  # Often reliable
+    "https://co.wuk.sh/api/json",              # Official (Strict)
+    "https://cobalt-api.ayo.tf/api/json"       # Backup
 ]
 
 @app.route('/')
@@ -19,7 +18,8 @@ def home():
 def process():
     user_url = request.json.get('url')
     
-    # Standard headers to look like a real browser
+    # MAGIC HEADERS: These trick the server into thinking we are the official site
+    # This bypasses many "Bot" blocks
     headers = {
         "Accept": "application/json",
         "Content-Type": "application/json",
@@ -29,43 +29,41 @@ def process():
     }
     
     payload = {
-        "url": user_url
+        "url": user_url,
+        "filenamePattern": "basic" # Keeps filenames simple
     }
 
     last_error = ""
     
-    # Loop through servers
+    # Try each server one by one
     for api_url in COBALT_SERVERS:
         try:
-            print(f"Attempting to use server: {api_url}")
-            # Increased timeout to 20 seconds because free servers can be slow
-            resp = requests.post(api_url, json=payload, headers=headers, timeout=20)
+            print(f"Trying server: {api_url}")
+            # Timeout set to 15s to give free servers time to wake up
+            resp = requests.post(api_url, json=payload, headers=headers, timeout=15)
             
-            # If the server is dead (404) or broken (500), skip to the next one
-            if resp.status_code != 200:
-                print(f"Failed: {api_url} returned {resp.status_code}")
-                last_error = f"Server {api_url} returned {resp.status_code}"
-                continue
-
-            data = resp.json()
+            # 200 means Success
+            if resp.status_code == 200:
+                data = resp.json()
+                # Double check we actually got a link
+                if 'url' in data or 'picker' in data:
+                    return jsonify(data)
             
-            # Success check
-            if 'url' in data or 'picker' in data:
-                return jsonify(data)
-            
-            # Check for API error messages
-            if 'text' in data:
-                last_error = data['text']
-            elif 'error' in data:
-                last_error = data['error']
+            # If we failed, save the error message
+            try:
+                err_text = resp.json().get('text') or resp.json().get('error') or resp.text
+                last_error = f"{api_url} said: {err_text}"
+            except:
+                last_error = f"{api_url} returned status {resp.status_code}"
                 
+            print(f"Failed: {last_error}")
+
         except Exception as e:
-            print(f"Connection Error on {api_url}: {str(e)}")
-            last_error = str(e)
+            last_error = f"Connection error to {api_url}: {str(e)}"
             continue
 
-    # If all servers fail
-    return jsonify({"error": f"All servers busy. Last error: {last_error}"})
+    # If everything failed, send the error to your phone
+    return jsonify({"error": f"All servers failed. Last specific error: {last_error}"})
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
