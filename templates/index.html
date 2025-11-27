@@ -5,23 +5,23 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Universal Downloader</title>
     <style>
-        body { font-family: sans-serif; background: #1a1a1a; color: white; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-        .container { background: #2d2d2d; padding: 2rem; border-radius: 15px; width: 90%; max-width: 400px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
+        body { font-family: sans-serif; background: #121212; color: white; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .container { background: #1e1e1e; padding: 2rem; border-radius: 15px; width: 90%; max-width: 400px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
         h1 { margin-bottom: 20px; color: #00ff88; }
-        input { width: 90%; padding: 12px; margin-bottom: 15px; border: none; border-radius: 8px; background: #404040; color: white; font-size: 16px; }
+        input { width: 90%; padding: 12px; margin-bottom: 15px; border: none; border-radius: 8px; background: #333; color: white; font-size: 16px; }
         button { width: 100%; padding: 12px; background: #00ff88; color: #1a1a1a; border: none; border-radius: 8px; font-weight: bold; font-size: 16px; cursor: pointer; transition: 0.3s; }
         button:hover { background: #00cc6a; }
         #status { margin-top: 15px; font-size: 14px; min-height: 20px; word-wrap: break-word; }
         .loader { border: 3px solid #f3f3f3; border-top: 3px solid #00ff88; border-radius: 50%; width: 20px; height: 20px; animation: spin 1s linear infinite; display: none; margin: 10px auto; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        a.download-btn { display: block; margin-top: 15px; padding: 10px; background: #3498db; color: white; text-decoration: none; border-radius: 5px; }
-        .error-msg { color: #ff4444; background: rgba(255, 68, 68, 0.1); padding: 10px; border-radius: 5px; font-size: 12px; }
+        a.download-btn { display: block; margin-top: 15px; padding: 12px; background: #3498db; color: white; text-decoration: none; border-radius: 5px; font-weight: bold; }
+        .error { color: #ff5555; background: rgba(255, 85, 85, 0.1); padding: 10px; border-radius: 5px; margin-top: 10px; font-size: 13px;}
     </style>
 </head>
 <body>
     <div class="container">
         <h1>All-in-One Saver</h1>
-        <input type="text" id="url" placeholder="Paste YouTube, Insta, TikTok link...">
+        <input type="text" id="url" placeholder="Paste Link (Insta, TikTok, YT)...">
         <button onclick="download()">Download Now</button>
         <div class="loader" id="loader"></div>
         <div id="status"></div>
@@ -29,20 +29,36 @@
 
     <script>
         async function download() {
-            const url = document.getElementById('url').value;
+            const urlInput = document.getElementById('url').value;
             const status = document.getElementById('status');
             const loader = document.getElementById('loader');
             
-            if (!url) { status.innerText = "Please paste a link first!"; return; }
+            if (!urlInput) { status.innerText = "Please paste a link first!"; return; }
 
             status.innerHTML = "";
             loader.style.display = "block";
 
+            // 1. The Target Server (Official Cobalt)
+            const targetApi = "https://co.wuk.sh/api/json";
+            
+            // 2. The Tunnel (CORS Proxy) - This routes the request via a neutral server
+            // Note: We use 'corsproxy.io' to bypass the browser security block
+            const proxy = "https://corsproxy.io/?";
+
             try {
-                const response = await fetch('/api/process', {
+                const response = await fetch(proxy + targetApi, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ url: url })
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json',
+                        // These headers trick the server
+                        'Origin': 'https://cobalt.tools', 
+                        'Referer': 'https://cobalt.tools/'
+                    },
+                    body: JSON.stringify({
+                        url: urlInput,
+                        filenamePattern: "basic"
+                    })
                 });
 
                 const data = await response.json();
@@ -52,16 +68,15 @@
                     status.innerHTML = `<a href="${data.url}" target="_blank" class="download-btn">Click to Save Video</a>`;
                 } else if (data.picker) {
                     status.innerHTML = `<a href="${data.picker[0].url}" target="_blank" class="download-btn">Click to Save Video</a>`;
-                } else if (data.error) {
-                    // Show the SPECIFIC error from the server
-                    status.innerHTML = `<div class="error-msg">⚠️ ${data.error}</div>`;
                 } else {
-                    status.innerHTML = `<div class="error-msg">⚠️ Unknown error. Check link.</div>`;
+                    const errorMsg = data.text || "Unknown error";
+                    status.innerHTML = `<div class="error">⚠️ ${errorMsg}</div>`;
                 }
 
             } catch (error) {
                 loader.style.display = "none";
-                status.innerHTML = `<div class="error-msg">System Error: ${error.message}</div>`;
+                status.innerHTML = `<div class="error">Connection Failed. <br>The Proxy might be busy. Try again in 10s.</div>`;
+                console.error(error);
             }
         }
     </script>
