@@ -7,21 +7,22 @@
     <style>
         body { font-family: sans-serif; background: #121212; color: white; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
         .container { background: #1e1e1e; padding: 2rem; border-radius: 15px; width: 90%; max-width: 400px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
-        h1 { margin-bottom: 20px; color: #00ff88; }
+        h1 { margin-bottom: 20px; color: #ff0033; }
+        span { color: #00ff88; }
         input { width: 90%; padding: 12px; margin-bottom: 15px; border: none; border-radius: 8px; background: #333; color: white; font-size: 16px; }
-        button { width: 100%; padding: 12px; background: #00ff88; color: #1a1a1a; border: none; border-radius: 8px; font-weight: bold; font-size: 16px; cursor: pointer; transition: 0.3s; }
-        button:hover { background: #00cc6a; }
+        button { width: 100%; padding: 12px; background: #ff0033; color: white; border: none; border-radius: 8px; font-weight: bold; font-size: 16px; cursor: pointer; transition: 0.3s; }
+        button:hover { background: #cc0029; }
         .note { margin-top: 20px; font-size: 12px; color: #888; }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>All-in-One Saver</h1>
+        <h1>You<span>Tube</span> & Insta</h1>
         <form action="/download" method="post">
-            <input type="text" name="url" placeholder="Paste Instagram Link..." required>
+            <input type="text" name="url" placeholder="Paste YouTube or Insta Link..." required>
             <button type="submit">Download</button>
         </form>
-        <p class="note">Works best for: Instagram, Twitter/X, Facebook.</p>
+        <p class="note">YouTube uses Piped Network. Insta uses Stealth Mode.</p>
     </div>
 </body>
 </html>
