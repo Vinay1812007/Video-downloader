@@ -19,14 +19,15 @@ def home():
 def download_video():
     video_url = request.form['url']
     
-    # If user tries YouTube here, tell them to use the JS button (Just in case)
+    # Safety Check: If user hits "Enter" on a YouTube link, tell them to click the button.
     if "youtube.com" in video_url or "youtu.be" in video_url:
-        return "Error: Please use the green 'Download Now' button for YouTube, not the enter key."
+        return "Error: For YouTube, please click the 'Download Video' button on the screen. Do not use the enter key."
 
-    # INSTAGRAM/TIKTOK ENGINE (Stealth Mode - Verified Working)
+    # INSTAGRAM/TIKTOK ENGINE (Stealth Mode)
+    # This runs on the server because Instagram blocks browsers, but not servers (yet).
     ua = UserAgent()
     random_ua = ua.random
-    print(f"Processing: {video_url} | Agent: {random_ua}")
+    print(f"Processing Insta: {video_url}")
 
     try:
         cleanup_downloads()
@@ -46,7 +47,7 @@ def download_video():
 
         @after_this_request
         def remove_file(response):
-            try: pass # Keep file briefly
+            try: pass 
             except: pass
             return response
 
@@ -65,3 +66,4 @@ def cleanup_downloads():
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
+    
