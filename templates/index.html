@@ -11,10 +11,11 @@
         input { width: 90%; padding: 12px; margin-bottom: 15px; border: none; border-radius: 8px; background: #404040; color: white; font-size: 16px; }
         button { width: 100%; padding: 12px; background: #00ff88; color: #1a1a1a; border: none; border-radius: 8px; font-weight: bold; font-size: 16px; cursor: pointer; transition: 0.3s; }
         button:hover { background: #00cc6a; }
-        #status { margin-top: 15px; font-size: 14px; min-height: 20px; }
+        #status { margin-top: 15px; font-size: 14px; min-height: 20px; word-wrap: break-word; }
         .loader { border: 3px solid #f3f3f3; border-top: 3px solid #00ff88; border-radius: 50%; width: 20px; height: 20px; animation: spin 1s linear infinite; display: none; margin: 10px auto; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         a.download-btn { display: block; margin-top: 15px; padding: 10px; background: #3498db; color: white; text-decoration: none; border-radius: 5px; }
+        .error-msg { color: #ff4444; background: rgba(255, 68, 68, 0.1); padding: 10px; border-radius: 5px; font-size: 12px; }
     </style>
 </head>
 <body>
@@ -38,12 +39,9 @@
             loader.style.display = "block";
 
             try {
-                // Request sent to YOUR internal server (Fixed Connection Error)
                 const response = await fetch('/api/process', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ url: url })
                 });
 
@@ -54,14 +52,16 @@
                     status.innerHTML = `<a href="${data.url}" target="_blank" class="download-btn">Click to Save Video</a>`;
                 } else if (data.picker) {
                     status.innerHTML = `<a href="${data.picker[0].url}" target="_blank" class="download-btn">Click to Save Video</a>`;
+                } else if (data.error) {
+                    // Show the SPECIFIC error from the server
+                    status.innerHTML = `<div class="error-msg">⚠️ ${data.error}</div>`;
                 } else {
-                    status.innerText = "Error: Video not found or link invalid.";
+                    status.innerHTML = `<div class="error-msg">⚠️ Unknown error. Check link.</div>`;
                 }
 
             } catch (error) {
                 loader.style.display = "none";
-                status.innerText = "Server Error. Try again.";
-                console.error(error);
+                status.innerHTML = `<div class="error-msg">System Error: ${error.message}</div>`;
             }
         }
     </script>
