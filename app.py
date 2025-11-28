@@ -4,13 +4,13 @@ import random
 
 app = Flask(__name__)
 
-# SWARM: List of Cobalt APIs (The Engines)
-# We try them one by one until one works.
+# THE "ELITE" LIST (Verified Working Servers)
+# We prioritize the official and high-uptime community servers.
 SERVERS = [
-    "https://cobalt.steamship.site/api/json",  # Usually most reliable
-    "https://co.wuk.sh/api/json",              # Official (Strict)
-    "https://cobalt-api.ayo.tf/api/json",       # Good backup
-    "https://cobalt.kwiatekmiki.pl/api/json"   # Backup
+    "https://co.wuk.sh/api/json",              # Official Server (Best Quality)
+    "https://cobalt.steamship.site/api/json",  # Very Stable
+    "https://cobalt-api.ayo.tf/api/json",      # reliable backup
+    "https://api.cobalt.tools/api/json"        # Official backup
 ]
 
 @app.route('/')
@@ -25,7 +25,9 @@ def analyze():
     if not user_url:
         return jsonify({"status": "error", "text": "No URL provided"})
 
-    # Headers to make the request look like a real user
+    # MAGIC HEADERS
+    # These headers are REQUIRED to make the official server (co.wuk.sh) accept the request.
+    # Without them, it blocks you as a "bot".
     headers = {
         "Accept": "application/json",
         "Content-Type": "application/json",
@@ -41,27 +43,35 @@ def analyze():
 
     last_error = ""
 
-    # Loop through the servers (The Swarm Logic)
-    for api_url in SERVERS:
+    # Rotator Logic: Shuffle the list so we don't hammer one server
+    # This prevents rate-limiting.
+    active_servers = SERVERS.copy()
+    random.shuffle(active_servers)
+
+    for api_url in active_servers:
         try:
-            print(f"Trying server: {api_url}")
-            resp = requests.post(api_url, json=payload, headers=headers, timeout=10)
+            print(f"Attempting: {api_url}")
+            resp = requests.post(api_url, json=payload, headers=headers, timeout=12)
             
             if resp.status_code == 200:
                 result = resp.json()
-                # Check if we actually got a valid response
+                
+                # Check for success
                 if 'url' in result or 'picker' in result:
                     return jsonify(result)
-            
-            # Save error for debugging
-            last_error = f"{api_url} -> {resp.status_code}"
+                
+                # Check for specific API error text
+                if 'text' in result:
+                    last_error = f"{api_url} says: {result['text']}"
+            else:
+                last_error = f"{api_url} returned {resp.status_code}"
             
         except Exception as e:
-            last_error = str(e)
+            last_error = f"Connection failed to {api_url}"
             continue
 
-    # If all fail
-    return jsonify({"status": "error", "text": f"All servers busy. Last error: {last_error}"})
+    # If we get here, all servers failed
+    return jsonify({"status": "error", "text": f"Service Busy. Please try again. ({last_error})"})
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
