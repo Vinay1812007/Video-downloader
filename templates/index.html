@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>S.V. Downloader</title>
+    <title>Video Downloader</title>
     <style>
         :root { --primary: #00ff88; --bg: #0f0f13; --card: #1a1a1f; --text: #fff; --error: #ff4444; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; overflow-x: hidden; }
@@ -14,13 +14,15 @@
         .badge { background: #333; padding: 5px 10px; border-radius: 20px; font-size: 11px; color: #aaa; margin-bottom: 20px; display: inline-block; }
 
         .input-group { position: relative; margin-bottom: 20px; }
-        input { width: 100%; padding: 15px; border: 2px solid #333; border-radius: 12px; background: #000; color: #fff; font-size: 16px; box-sizing: border-box; outline: none; }
+        input { width: 100%; padding: 15px; border: 2px solid #333; border-radius: 12px; background: #000; color: #fff; font-size: 16px; box-sizing: border-box; outline: none; transition: 0.3s; }
         input:focus { border-color: var(--primary); }
 
-        .process-btn { width: 100%; padding: 15px; background: var(--primary); color: #000; border: none; border-radius: 12px; font-weight: bold; font-size: 16px; cursor: pointer; text-transform: uppercase; }
+        .process-btn { width: 100%; padding: 15px; background: var(--primary); color: #000; border: none; border-radius: 12px; font-weight: bold; font-size: 16px; cursor: pointer; text-transform: uppercase; transition: 0.3s; }
+        .process-btn:hover { transform: scale(1.02); }
         .process-btn:disabled { background: #555; cursor: not-allowed; }
 
-        #result-area { display: none; margin-top: 20px; border-top: 1px solid #333; padding-top: 20px; }
+        #result-area { display: none; margin-top: 20px; border-top: 1px solid #333; padding-top: 20px; animation: fadeIn 0.5s; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
         .thumb-box { width: 100%; height: 200px; border-radius: 10px; overflow: hidden; margin-bottom: 15px; background: #000; }
         .thumb-box img { width: 100%; height: 100%; object-fit: cover; }
@@ -28,10 +30,12 @@
         .dl-btn { display: block; width: 100%; padding: 12px; margin-bottom: 10px; border-radius: 8px; text-decoration: none; font-weight: bold; font-size: 14px; text-align: center; box-sizing: border-box; }
         .dl-video { background: #2d2d2d; color: white; border: 1px solid #444; }
         .dl-audio { background: #2d2d2d; color: #ff0088; border: 1px solid #444; }
+        .dl-fallback { background: #ff4444; color: white; border: none; }
 
         .loader { width: 20px; height: 20px; border: 3px solid #000; border-bottom-color: transparent; border-radius: 50%; display: inline-block; animation: rotation 1s linear infinite; }
         @keyframes rotation { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        .error { color: var(--error); margin-top: 10px; font-size: 13px; }
+        
+        .status { margin-top: 10px; font-size: 12px; color: #666; }
     </style>
 </head>
 <body>
@@ -43,11 +47,11 @@
             <input type="text" id="urlInput" placeholder="Paste Video Link Here..." autocomplete="off">
         </div>
 
-        <button class="process-btn" id="mainBtn" onclick="analyzeLink()">
+        <button class="process-btn" id="mainBtn" onclick="startSwarm()">
             <span id="btnText">Check Link</span>
         </button>
 
-        <div id="status" class="error"></div>
+        <div id="status" class="status"></div>
 
         <div id="result-area">
             <div class="thumb-box">
@@ -58,7 +62,20 @@
     </div>
 
     <script>
-        async function analyzeLink() {
+        // 1. THE APIS (The Engines)
+        const APIS = [
+            "https://cobalt-api.ayo.tf/api/json",
+            "https://co.wuk.sh/api/json",
+            "https://cobalt.q13.fr/api/json"
+        ];
+
+        // 2. THE TUNNELS (To bypass restrictions)
+        const PROXIES = [
+            "https://corsproxy.io/?",
+            "https://api.allorigins.win/raw?url="
+        ];
+
+        async function startSwarm() {
             const url = document.getElementById('urlInput').value.trim();
             const btn = document.getElementById('mainBtn');
             const btnText = document.getElementById('btnText');
@@ -67,84 +84,135 @@
 
             if (!url) { status.innerText = "Please paste a link first."; return; }
 
-            // UI Reset
-            status.innerText = "";
+            // RESET
+            status.innerText = "Initializing Swarm...";
             resultArea.style.display = "none";
             btn.disabled = true;
             btnText.innerHTML = '<span class="loader"></span>';
 
-            // TeraBox Handling
+            // SPECIAL: TERABOX
             if (url.includes('terabox') || url.includes('1024tera')) {
                 setTimeout(() => {
                     window.location.href = `https://teraboxdownloader.com/?url=${encodeURIComponent(url)}`;
-                    btn.disabled = false;
-                    btnText.innerText = "Check Link";
+                    resetBtn();
                 }, 1000);
                 return;
             }
 
-            try {
-                // Call YOUR server
-                const response = await fetch('/analyze', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ url: url })
-                });
+            // SWARM LOGIC: Try combinations of Proxy + API
+            let success = false;
+            
+            // Loop through APIs
+            for (let api of APIS) {
+                if (success) break;
+                
+                // Loop through Proxies
+                for (let proxy of PROXIES) {
+                    try {
+                        status.innerText = `Trying Node: ${new URL(api).hostname}...`;
+                        const targetUrl = proxy + encodeURIComponent(api);
+                        
+                        const response = await fetch(targetUrl, {
+                            method: 'POST',
+                            headers: {
+                                'Accept': 'application/json',
+                                'Content-Type': 'application/json',
+                                'Origin': 'https://cobalt.tools' // Fake Header
+                            },
+                            body: JSON.stringify({
+                                url: url,
+                                filenamePattern: "basic"
+                            })
+                        });
 
-                const data = await response.json();
-
-                if (data.status === 'error' || data.text) {
-                    throw new Error(data.text || "Failed to process video.");
+                        const data = await response.json();
+                        
+                        if (data.url || data.picker) {
+                            showResult(data);
+                            success = true;
+                            break; // Stop looping, we found it!
+                        }
+                    } catch (e) {
+                        console.log(`Failed ${api} via ${proxy}`);
+                        continue;
+                    }
                 }
+            }
 
-                showResult(data);
-
-            } catch (e) {
-                console.error(e);
-                status.innerText = "Failed: " + e.message;
-                btn.disabled = false;
-                btnText.innerText = "Check Link";
+            if (!success) {
+                showFallback(url);
             }
         }
 
         function showResult(data) {
-            const btn = document.getElementById('mainBtn');
-            const btnText = document.getElementById('btnText');
+            const status = document.getElementById('status');
             const resultArea = document.getElementById('result-area');
             const thumb = document.getElementById('thumbnail');
             const btnsDiv = document.getElementById('downloadButtons');
 
-            // Thumbnail Handling
-            if (data.picker && data.picker.length > 0 && data.picker[0].thumb) {
-                thumb.src = data.picker[0].thumb;
-            } else if (data.thumb) {
-                thumb.src = data.thumb;
-            } else {
-                thumb.src = "https://via.placeholder.com/400x200/000000/00ff88?text=Download+Ready";
-            }
+            status.innerText = "Success!";
+            
+            // Thumbnail
+            if (data.picker && data.picker[0].thumb) thumb.src = data.picker[0].thumb;
+            else if (data.thumb) thumb.src = data.thumb;
+            else thumb.src = "https://via.placeholder.com/400x200?text=Download+Ready";
 
             btnsDiv.innerHTML = "";
 
-            // Create Buttons
+            // Buttons
             if (data.picker) {
                 data.picker.forEach(item => {
-                    const el = document.createElement('a');
-                    el.className = item.type === 'video' ? 'dl-btn dl-video' : 'dl-btn dl-audio';
-                    el.href = item.url;
-                    el.target = "_blank";
-                    el.innerText = item.type === 'video' ? 'Download Video' : 'Download Audio';
-                    btnsDiv.appendChild(el);
+                    createBtn(item.url, item.type === 'video' ? 'Download Video' : 'Download Audio', item.type, btnsDiv);
                 });
             } else if (data.url) {
-                const el = document.createElement('a');
-                el.className = 'dl-btn dl-video';
-                el.href = data.url;
-                el.target = "_blank";
-                el.innerText = "Download Video";
-                btnsDiv.appendChild(el);
+                createBtn(data.url, 'Download Video', 'video', btnsDiv);
             }
 
             resultArea.style.display = "block";
+            resetBtn();
+        }
+
+        function showFallback(url) {
+            const status = document.getElementById('status');
+            const resultArea = document.getElementById('result-area');
+            const thumb = document.getElementById('thumbnail');
+            const btnsDiv = document.getElementById('downloadButtons');
+
+            status.innerHTML = "<span style='color:orange'>Standard APIs busy. Using Backup Engine.</span>";
+            thumb.src = "https://via.placeholder.com/400x200?text=Backup+Mode";
+            btnsDiv.innerHTML = "";
+
+            // Create a button that sends them to a guaranteed working external site
+            const btn = document.createElement('a');
+            btn.className = 'dl-btn dl-fallback';
+            btn.target = "_blank";
+            btn.innerText = "📂 Open External Downloader";
+            
+            if (url.includes('youtube') || url.includes('youtu.be')) {
+                btn.href = `https://ssyoutube.com/en/result?url=${url}`;
+            } else if (url.includes('instagram')) {
+                btn.href = `https://snapinsta.app/`; // User has to paste again, but it works
+            } else {
+                btn.href = `https://y2mate.com`;
+            }
+            
+            btnsDiv.appendChild(btn);
+            resultArea.style.display = "block";
+            resetBtn();
+        }
+
+        function createBtn(link, text, type, container) {
+            const el = document.createElement('a');
+            el.className = type === 'video' ? 'dl-btn dl-video' : 'dl-btn dl-audio';
+            el.href = link;
+            el.target = "_blank";
+            el.innerText = text;
+            container.appendChild(el);
+        }
+
+        function resetBtn() {
+            const btn = document.getElementById('mainBtn');
+            const btnText = document.getElementById('btnText');
             btn.disabled = false;
             btnText.innerText = "Check Another";
         }
