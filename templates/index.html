@@ -3,42 +3,212 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Video Downloader</title>
+    <title>S.V. Downloader Pro</title>
     <style>
-        body { font-family: sans-serif; background: #121212; color: white; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-        .container { background: #1e1e1e; padding: 2rem; border-radius: 15px; width: 90%; max-width: 400px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
-        h1 { margin-bottom: 20px; color: #ff0033; }
-        span { color: #00ff88; }
-        input { width: 90%; padding: 12px; margin-bottom: 15px; border: none; border-radius: 8px; background: #333; color: white; font-size: 16px; }
-        button { width: 100%; padding: 12px; background: #ff0033; color: white; border: none; border-radius: 8px; font-weight: bold; font-size: 16px; cursor: pointer; transition: 0.3s; }
-        button:hover { background: #cc0029; }
-        #status { margin-top: 15px; font-size: 13px; color: #aaa; }
+        :root { --primary: #00ff88; --bg: #0f0f13; --card: #1a1a1f; --text: #fff; --error: #ff4444; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; overflow-x: hidden; }
+        
+        /* Glassmorphism Card */
+        .container { background: rgba(26, 26, 31, 0.95); padding: 2rem; border-radius: 20px; width: 90%; max-width: 450px; text-align: center; box-shadow: 0 0 40px rgba(0, 255, 136, 0.1); border: 1px solid #333; transform: translateY(20px); opacity: 0; animation: slideUp 0.8s forwards; }
+        
+        @keyframes slideUp { to { transform: translateY(0); opacity: 1; } }
+
+        h1 { margin: 0 0 20px 0; font-weight: 800; letter-spacing: -1px; background: linear-gradient(90deg, #fff, #00ff88); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        
+        /* Input Field */
+        .input-group { position: relative; margin-bottom: 20px; }
+        input { width: 100%; padding: 15px; border: 2px solid #333; border-radius: 12px; background: #000; color: #fff; font-size: 16px; box-sizing: border-box; transition: 0.3s; outline: none; }
+        input:focus { border-color: var(--primary); box-shadow: 0 0 15px rgba(0, 255, 136, 0.2); }
+
+        /* Main Button */
+        .process-btn { width: 100%; padding: 15px; background: var(--primary); color: #000; border: none; border-radius: 12px; font-weight: bold; font-size: 18px; cursor: pointer; transition: 0.3s; text-transform: uppercase; letter-spacing: 1px; }
+        .process-btn:hover { transform: scale(1.02); box-shadow: 0 0 20px var(--primary); }
+        .process-btn:disabled { background: #555; cursor: not-allowed; }
+
+        /* Results Area */
+        #result-area { display: none; margin-top: 20px; border-top: 1px solid #333; padding-top: 20px; animation: fadeIn 0.5s; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        /* Thumbnail */
+        .thumb-box { width: 100%; height: 200px; border-radius: 10px; overflow: hidden; margin-bottom: 15px; background: #000; position: relative; }
+        .thumb-box img { width: 100%; height: 100%; object-fit: cover; }
+        
+        /* Download Options */
+        .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .dl-btn { padding: 12px; border-radius: 8px; text-decoration: none; font-weight: bold; font-size: 14px; transition: 0.3s; display: block; text-align: center; cursor: pointer; border: none; }
+        .dl-video { background: #2d2d2d; color: white; border: 1px solid #444; }
+        .dl-video:hover { background: #444; border-color: #fff; }
+        .dl-audio { background: #2d2d2d; color: #ff0088; border: 1px solid #444; }
+        .dl-audio:hover { background: #444; border-color: #ff0088; }
+
+        /* Loader */
+        .loader { width: 24px; height: 24px; border: 3px solid #000; border-bottom-color: transparent; border-radius: 50%; display: inline-block; animation: rotation 1s linear infinite; }
+        @keyframes rotation { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* Messages */
+        .status { margin-top: 10px; font-size: 13px; color: #888; }
+        .error { color: var(--error); margin-top: 10px; font-size: 13px; }
+        
+        .badge { background: #333; padding: 5px 10px; border-radius: 20px; font-size: 10px; color: #aaa; margin-bottom: 15px; display: inline-block; }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>You<span>Tube</span> & Insta</h1>
+        <h1>S.V. Downloader</h1>
+        <div class="badge">Supports: YouTube • Insta • TikTok • TeraBox</div>
         
-        <form id="mainForm" action="/download" method="post">
-            <input type="text" id="url" name="url" placeholder="Paste Link Here..." required>
-            <button type="submit" onclick="showStatus()">Download Video</button>
-        </form>
-        
-        <div id="status"></div>
+        <div class="input-group">
+            <input type="text" id="urlInput" placeholder="Paste Video Link Here..." autocomplete="off">
+        </div>
+
+        <button class="process-btn" id="mainBtn" onclick="analyzeLink()">
+            <span id="btnText">Check Link</span>
+        </button>
+
+        <div id="status" class="status"></div>
+
+        <div id="result-area">
+            <div class="thumb-box">
+                <img id="thumbnail" src="" alt="Video Thumbnail">
+            </div>
+            <h3 id="videoTitle" style="font-size: 14px; margin-bottom: 15px; color: #ddd;"></h3>
+            
+            <div class="options-grid" id="downloadButtons">
+                </div>
+        </div>
     </div>
 
     <script>
-        function showStatus() {
-            const url = document.getElementById('url').value;
+        // -- CONFIGURATION --
+        // Robust list of Cobalt Mirrors (The Engine)
+        const APIS = [
+            "https://co.wuk.sh/api/json",
+            "https://cobalt.steamship.site/api/json",
+            "https://cobalt-api.ayo.tf/api/json"
+        ];
+
+        async function analyzeLink() {
+            const url = document.getElementById('urlInput').value.trim();
+            const btn = document.getElementById('mainBtn');
+            const btnText = document.getElementById('btnText');
             const status = document.getElementById('status');
-            
-            if(url) {
-                if(url.includes('youtube') || url.includes('youtu.be')) {
-                    status.innerText = "Redirecting to Secure Server...";
-                } else {
-                    status.innerText = "Downloading from Instagram...";
-                }
+            const resultArea = document.getElementById('result-area');
+
+            if (!url) { status.innerText = "⚠️ Please paste a link first."; return; }
+
+            // RESET UI
+            status.innerText = "";
+            resultArea.style.display = "none";
+            btn.disabled = true;
+            btnText.innerHTML = '<span class="loader"></span>';
+
+            // -- SPECIAL: TERABOX HANDLER --
+            if (url.includes('terabox') || url.includes('1024tera')) {
+                handleTeraBox(url);
+                return;
             }
+
+            // -- STANDARD: COBALT HANDLER (YT, Insta, TikTok) --
+            try {
+                // We use a CORS Proxy to talk to the API from the browser
+                // This bypasses the Render Server IP Block completely
+                const api = APIS[Math.floor(Math.random() * APIS.length)]; // Pick random server
+                const proxyUrl = "https://corsproxy.io/?" + api;
+
+                const response = await fetch(proxyUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        url: url,
+                        filenamePattern: "basic"
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.status === 'error' || data.text) {
+                    throw new Error(data.text || "Could not fetch video.");
+                }
+
+                showResult(data);
+
+            } catch (e) {
+                console.error(e);
+                status.innerHTML = `<span class="error">Failed: ${e.message}.<br>Try a different link.</span>`;
+                btn.disabled = false;
+                btnText.innerText = "Check Link";
+            }
+        }
+
+        function showResult(data) {
+            const btn = document.getElementById('mainBtn');
+            const btnText = document.getElementById('btnText');
+            const resultArea = document.getElementById('result-area');
+            const thumb = document.getElementById('thumbnail');
+            const title = document.getElementById('videoTitle');
+            const btnsDiv = document.getElementById('downloadButtons');
+
+            // 1. Show Thumbnail (If available, else use placeholder)
+            // Cobalt sometimes doesn't send thumbnail, so we check.
+            if (data.picker && data.picker.length > 0 && data.picker[0].thumb) {
+                thumb.src = data.picker[0].thumb;
+            } else {
+                thumb.src = "https://via.placeholder.com/400x200/000000/00ff88?text=Ready+To+Download";
+            }
+
+            title.innerText = data.filename || "Video Ready";
+            btnsDiv.innerHTML = ""; // Clear old buttons
+
+            // 2. Generate Buttons
+            if (data.picker) {
+                // If API returns multiple options (Audio/Video)
+                data.picker.forEach(item => {
+                    const btn = document.createElement('a');
+                    btn.className = item.type === 'video' ? 'dl-btn dl-video' : 'dl-btn dl-audio';
+                    btn.href = item.url;
+                    btn.target = "_blank";
+                    btn.innerText = item.type === 'video' ? '📺 Download Video' : '🎵 Download Audio';
+                    btnsDiv.appendChild(btn);
+                });
+            } else if (data.url) {
+                // If API returns single link (Usually Video)
+                const vidBtn = document.createElement('a');
+                vidBtn.className = 'dl-btn dl-video';
+                vidBtn.href = data.url;
+                vidBtn.target = "_blank";
+                vidBtn.innerText = "📺 Download Video";
+                btnsDiv.appendChild(vidBtn);
+
+                // Add an Audio button manually (Force Cobalt to convert)
+                // Note: This requires a re-fetch, but for simple UI we just show video
+            }
+
+            // 3. Reveal UI
+            resultArea.style.display = "block";
+            btn.disabled = false;
+            btnText.innerText = "Process Another";
+        }
+
+        function handleTeraBox(url) {
+            const status = document.getElementById('status');
+            const btn = document.getElementById('mainBtn');
+            const btnText = document.getElementById('btnText');
+
+            status.innerHTML = "🚀 TeraBox Detected! Redirecting to specialist server...";
+            
+            setTimeout(() => {
+                // TeraBox requires special handling. 
+                // We redirect to a dedicated TeraBox downloader that works reliably.
+                window.location.href = `https://teraboxdownloader.com/?url=${encodeURIComponent(url)}`;
+                
+                // Reset UI in case they come back
+                btn.disabled = false;
+                btnText.innerText = "Check Link";
+                status.innerText = "";
+            }, 1500);
         }
     </script>
 </body>
