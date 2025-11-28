@@ -84,7 +84,7 @@
             }
 
             try {
-                // Call YOUR server instead of public proxy
+                // Call YOUR server
                 const response = await fetch('/analyze', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -114,11 +114,13 @@
             const thumb = document.getElementById('thumbnail');
             const btnsDiv = document.getElementById('downloadButtons');
 
-            // Thumbnail
-            if (data.picker && data.picker[0].thumb) {
+            // Thumbnail Handling
+            if (data.picker && data.picker.length > 0 && data.picker[0].thumb) {
                 thumb.src = data.picker[0].thumb;
+            } else if (data.thumb) {
+                thumb.src = data.thumb;
             } else {
-                thumb.src = "https://via.placeholder.com/400x200?text=No+Thumbnail";
+                thumb.src = "https://via.placeholder.com/400x200/000000/00ff88?text=Download+Ready";
             }
 
             btnsDiv.innerHTML = "";
