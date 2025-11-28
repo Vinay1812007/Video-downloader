@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>S.V. Premium Downloader</title>
+    <title>S.V. Ultimate Downloader</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
         :root { --primary: #00f2ff; --bg: #050505; --glass: rgba(255, 255, 255, 0.05); }
@@ -19,7 +19,7 @@
         .card {
             background: var(--glass); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.1);
             border-radius: 24px; padding: 2.5rem; width: 90%; max-width: 420px;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.5); text-align: center;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5); text-align: center; position: relative;
         }
 
         h1 {
@@ -30,16 +30,18 @@
 
         input {
             width: 100%; background: rgba(0,0,0,0.3); border: 2px solid rgba(255,255,255,0.1);
-            padding: 16px; border-radius: 16px; color: white; font-size: 16px; box-sizing: border-box; outline: none; margin-bottom: 20px;
+            padding: 16px; border-radius: 16px; color: white; font-size: 16px; box-sizing: border-box; outline: none; margin-bottom: 20px; transition: 0.3s;
         }
-        input:focus { border-color: var(--primary); background: rgba(0,0,0,0.5); }
+        input:focus { border-color: var(--primary); background: rgba(0,0,0,0.5); box-shadow: 0 0 15px rgba(0, 242, 255, 0.2); }
 
         .btn-main {
             width: 100%; padding: 18px; border-radius: 16px; border: none;
             background: linear-gradient(135deg, var(--primary), #00aaff); color: #000;
             font-weight: 800; font-size: 16px; cursor: pointer; text-transform: uppercase;
+            transition: 0.3s;
         }
-        .btn-main:disabled { background: #555; color: #888; cursor: not-allowed; }
+        .btn-main:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(0, 242, 255, 0.3); }
+        .btn-main:disabled { background: #555; color: #888; cursor: not-allowed; transform: none; box-shadow: none; }
 
         .loader {
             display: none; width: 24px; height: 24px; border: 3px solid rgba(0,0,0,0.3);
@@ -50,25 +52,26 @@
         #result { display: none; margin-top: 30px; animation: fadeIn 0.5s; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        .thumb { width: 100%; height: 180px; border-radius: 16px; object-fit: cover; border: 1px solid rgba(255,255,255,0.1); margin-bottom: 15px; }
+        .thumb { width: 100%; height: 180px; border-radius: 16px; object-fit: cover; border: 1px solid rgba(255,255,255,0.1); margin-bottom: 15px; background: #000; }
 
         .dl-action {
             display: block; width: 100%; background: #1a1a1f; border: 1px solid var(--primary);
             color: var(--primary); padding: 15px; text-decoration: none; border-radius: 12px;
-            font-weight: bold; margin-bottom: 10px; box-sizing: border-box;
+            font-weight: bold; margin-bottom: 10px; box-sizing: border-box; transition: 0.3s;
         }
         .dl-action:hover { background: var(--primary); color: #000; }
-        .status { margin-top: 15px; font-size: 13px; color: #ff4444; }
+        
+        .status { margin-top: 15px; font-size: 13px; color: #ff4444; min-height: 20px; }
     </style>
 </head>
 <body>
     <div class="card">
         <h1>S.V. Downloader</h1>
-        <div class="subtitle">Premium Link Saver</div>
+        <div class="subtitle">Ultimate Media Saver</div>
         
         <input type="text" id="urlInput" placeholder="Paste YouTube, Insta, TikTok link..." autocomplete="off">
         
-        <button class="btn-main" id="processBtn" onclick="startDownload()">
+        <button class="btn-main" id="processBtn" onclick="startClientSwarm()">
             <span id="btnText">Download Now</span>
             <div class="loader" id="loader"></div>
         </button>
@@ -82,7 +85,17 @@
     </div>
 
     <script>
-        async function startDownload() {
+        // 1. THE NODES (Engines) - Mixed List
+        const APIS = [
+            "https://cobalt-api.ayo.tf/api/json",
+            "https://cobalt.steamship.site/api/json",
+            "https://co.wuk.sh/api/json",
+            "https://cobalt.q13.fr/api/json",
+            "https://cobalt.rudart.cc/api/json",
+            "https://api.cobalt.tools/api/json"
+        ];
+
+        async function startClientSwarm() {
             const url = document.getElementById('urlInput').value.trim();
             const btn = document.getElementById('processBtn');
             const btnText = document.getElementById('btnText');
@@ -92,40 +105,82 @@
 
             if (!url) { status.innerText = "Please paste a link first"; return; }
 
-            // Special handling for TeraBox (Cannot be done via API)
-            if (url.includes('terabox') || url.includes('1024tera')) {
-                status.innerHTML = "<span style='color:#00f2ff'>TeraBox Detected! Redirecting to Specialist...</span>";
-                setTimeout(() => { window.location.href = `https://teraboxdownloader.com/?url=${encodeURIComponent(url)}`; }, 1500);
-                return;
-            }
-
+            // RESET
             status.innerText = "";
             result.style.display = "none";
             btnText.style.display = "none";
             loader.style.display = "block";
             btn.disabled = true;
 
-            try {
-                // Call OUR Python Backend (The Lenient Proxy)
-                const response = await fetch('/process', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ url: url })
-                });
+            // SPECIAL: TERABOX (Must be external)
+            if (url.includes('terabox') || url.includes('1024tera')) {
+                setTimeout(() => {
+                    window.location.href = `https://teraboxdownloader.com/?url=${encodeURIComponent(url)}`;
+                    resetBtn();
+                }, 1000);
+                return;
+            }
 
-                const res = await response.json();
+            let success = false;
 
-                if (!res.success) throw new Error(res.error);
+            // CLIENT-SIDE SWARM LOGIC
+            // We loop through APIs and use 'allorigins' to proxy the request.
+            for (let api of APIS) {
+                if (success) break;
+                
+                try {
+                    console.log("Trying: " + api);
+                    
+                    // The Payload (Simplified to avoid 400 Error)
+                    const payload = {
+                        url: url
+                    };
 
-                showSuccess(res.data);
+                    // We wrap our POST request inside AllOrigins to bypass CORS
+                    // This is the trick that makes it work on your browser without a server.
+                    const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(api)}`;
+                    
+                    // Note: AllOrigins is GET only, but some Cobalt APIs allow data in specific formats.
+                    // Instead, let's use a Direct fetch with 'no-cors' check first, 
+                    // OR try the 'corsproxy.io' which supports POST.
+                    
+                    const targetUrl = "https://corsproxy.io/?" + api;
+                    
+                    const response = await fetch(targetUrl, {
+                        method: 'POST',
+                        headers: {
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json',
+                            'Origin': 'https://cobalt.tools'
+                        },
+                        body: JSON.stringify(payload)
+                    });
 
-            } catch (e) {
-                status.innerText = e.message || "Failed to fetch video.";
-            } finally {
-                btn.disabled = false;
-                loader.style.display = "none";
-                btnText.style.display = "block";
-                btnText.innerText = "Download Another";
+                    const data = await response.json();
+                    
+                    if (data.status === 'error' || data.text) {
+                        // If 400 happens here, it's specific to that server, try next.
+                        continue; 
+                    }
+
+                    if (data.url || data.picker) {
+                        showSuccess(data);
+                        success = true;
+                        break;
+                    }
+                } catch (e) {
+                    console.log("Node failed: " + e);
+                    continue;
+                }
+            }
+
+            if (!success) {
+                status.innerText = "All nodes busy. Opening Backup...";
+                setTimeout(() => {
+                   if(url.includes('youtube') || url.includes('youtu.be')) window.open(`https://ssyoutube.com/en/result?url=${url}`, '_blank');
+                   else window.open(`https://publer.io/tools/media-downloader?url=${url}`, '_blank');
+                   resetBtn();
+                }, 1500);
             }
         }
 
@@ -134,7 +189,7 @@
             const thumb = document.getElementById('thumbImg');
             const linksDiv = document.getElementById('downloadLinks');
 
-            let thumbUrl = "https://via.placeholder.com/400x200?text=Video+Found";
+            let thumbUrl = "https://via.placeholder.com/400x200/000000/00f2ff?text=Ready";
             if (data.picker && data.picker[0].thumb) thumbUrl = data.picker[0].thumb;
             else if (data.thumb) thumbUrl = data.thumb;
             thumb.src = thumbUrl;
@@ -143,13 +198,14 @@
 
             if (data.picker) {
                 data.picker.forEach(item => {
-                    createButton(item.url, item.type === 'video' ? 'Save Video (HD)' : 'Save Audio', linksDiv);
+                    createButton(item.url, item.type === 'video' ? 'Download Video' : 'Download Audio', linksDiv);
                 });
             } else if (data.url) {
-                createButton(data.url, 'Save Video (HD)', linksDiv);
+                createButton(data.url, 'Download Video', linksDiv);
             }
 
             result.style.display = "block";
+            resetBtn();
         }
 
         function createButton(url, text, container) {
@@ -159,6 +215,16 @@
             a.target = '_blank';
             a.innerHTML = `<i class="fas fa-download"></i> ${text}`;
             container.appendChild(a);
+        }
+
+        function resetBtn() {
+            const btn = document.getElementById('processBtn');
+            const btnText = document.getElementById('btnText');
+            const loader = document.getElementById('loader');
+            btn.disabled = false;
+            loader.style.display = "none";
+            btnText.style.display = "block";
+            btnText.innerText = "Download Another";
         }
     </script>
 </body>
