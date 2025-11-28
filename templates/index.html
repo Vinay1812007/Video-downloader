@@ -2,179 +2,78 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>S.V. Premium Downloader</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-        :root {
-            --primary: #00f2ff;
-            --secondary: #ff0055;
-            --bg: #050505;
-            --glass: rgba(255, 255, 255, 0.05);
-            --border: rgba(255, 255, 255, 0.1);
-        }
-
+        :root { --primary: #00f2ff; --bg: #050505; --glass: rgba(255, 255, 255, 0.05); }
         body {
-            margin: 0;
-            padding: 0;
-            font-family: 'Inter', sans-serif;
-            background-color: var(--bg);
-            color: white;
-            height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            overflow: hidden;
-            background-image: 
-                radial-gradient(circle at 10% 20%, rgba(0, 242, 255, 0.15) 0%, transparent 40%),
-                radial-gradient(circle at 90% 80%, rgba(255, 0, 85, 0.15) 0%, transparent 40%);
+            margin: 0; padding: 0; font-family: 'Inter', sans-serif;
+            background-color: var(--bg); color: white; height: 100vh;
+            display: flex; justify-content: center; align-items: center; overflow: hidden;
+            background-image: radial-gradient(circle at 10% 20%, rgba(0, 242, 255, 0.15) 0%, transparent 40%), radial-gradient(circle at 90% 80%, rgba(255, 0, 85, 0.15) 0%, transparent 40%);
             animation: bgPulse 10s infinite alternate;
         }
-
-        @keyframes bgPulse {
-            0% { background-size: 100% 100%; }
-            100% { background-size: 110% 110%; }
-        }
+        @keyframes bgPulse { 0% { background-size: 100% 100%; } 100% { background-size: 110% 110%; } }
 
         .card {
-            background: var(--glass);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid var(--border);
-            border-radius: 24px;
-            padding: 2.5rem;
-            width: 90%;
-            max-width: 420px;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
-            position: relative;
-            transform: translateY(20px);
-            opacity: 0;
-            animation: slideUp 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+            background: var(--glass); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 24px; padding: 2.5rem; width: 90%; max-width: 420px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5); text-align: center;
         }
-
-        @keyframes slideUp { to { transform: translateY(0); opacity: 1; } }
 
         h1 {
-            font-size: 28px;
-            font-weight: 800;
-            margin-bottom: 5px;
-            text-align: center;
-            background: linear-gradient(135deg, #fff, var(--primary));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+            font-size: 28px; font-weight: 800; margin-bottom: 5px;
+            background: linear-gradient(135deg, #fff, var(--primary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
         }
-
-        .subtitle {
-            text-align: center;
-            color: #888;
-            font-size: 12px;
-            margin-bottom: 30px;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-        }
-
-        .input-group { position: relative; margin-bottom: 20px; }
+        .subtitle { color: #888; font-size: 12px; margin-bottom: 30px; text-transform: uppercase; letter-spacing: 2px; }
 
         input {
-            width: 100%;
-            background: rgba(0,0,0,0.3);
-            border: 2px solid var(--border);
-            padding: 16px;
-            border-radius: 16px;
-            color: white;
-            font-size: 16px;
-            box-sizing: border-box;
-            outline: none;
-            transition: 0.3s;
+            width: 100%; background: rgba(0,0,0,0.3); border: 2px solid rgba(255,255,255,0.1);
+            padding: 16px; border-radius: 16px; color: white; font-size: 16px; box-sizing: border-box; outline: none; margin-bottom: 20px;
         }
-
-        input:focus {
-            border-color: var(--primary);
-            box-shadow: 0 0 20px rgba(0, 242, 255, 0.2);
-            background: rgba(0,0,0,0.5);
-        }
+        input:focus { border-color: var(--primary); background: rgba(0,0,0,0.5); }
 
         .btn-main {
-            width: 100%;
-            padding: 18px;
-            border-radius: 16px;
-            border: none;
-            background: linear-gradient(135deg, var(--primary), #00aaff);
-            color: #000;
-            font-weight: 800;
-            font-size: 16px;
-            cursor: pointer;
-            transition: 0.3s;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            position: relative;
-            overflow: hidden;
+            width: 100%; padding: 18px; border-radius: 16px; border: none;
+            background: linear-gradient(135deg, var(--primary), #00aaff); color: #000;
+            font-weight: 800; font-size: 16px; cursor: pointer; text-transform: uppercase;
         }
-        
-        .btn-main:disabled { background: #555; cursor: not-allowed; }
-        .btn-main:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(0, 242, 255, 0.3); }
+        .btn-main:disabled { background: #555; color: #888; cursor: not-allowed; }
+
+        .loader {
+            display: none; width: 24px; height: 24px; border: 3px solid rgba(0,0,0,0.3);
+            border-top: 3px solid #000; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
         #result { display: none; margin-top: 30px; animation: fadeIn 0.5s; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        .thumb {
-            width: 100%;
-            height: 180px;
-            border-radius: 16px;
-            object-fit: cover;
-            border: 1px solid var(--border);
-            margin-bottom: 15px;
-            background: #000;
-        }
+        .thumb { width: 100%; height: 180px; border-radius: 16px; object-fit: cover; border: 1px solid rgba(255,255,255,0.1); margin-bottom: 15px; }
 
         .dl-action {
-            display: block;
-            width: 100%;
-            background: #1a1a1f;
-            border: 1px solid var(--primary);
-            color: var(--primary);
-            padding: 15px;
-            text-align: center;
-            text-decoration: none;
-            border-radius: 12px;
-            font-weight: bold;
-            transition: 0.3s;
-            margin-bottom: 10px;
+            display: block; width: 100%; background: #1a1a1f; border: 1px solid var(--primary);
+            color: var(--primary); padding: 15px; text-decoration: none; border-radius: 12px;
+            font-weight: bold; margin-bottom: 10px; box-sizing: border-box;
         }
-        
         .dl-action:hover { background: var(--primary); color: #000; }
-
-        .loader {
-            display: none;
-            width: 24px;
-            height: 24px;
-            border: 3px solid rgba(0,0,0,0.3);
-            border-top: 3px solid #000;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin: 0 auto;
-        }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-
-        .status-msg { text-align: center; font-size: 13px; color: #ff4444; margin-top: 10px; min-height: 20px; }
+        .status { margin-top: 15px; font-size: 13px; color: #ff4444; }
     </style>
 </head>
 <body>
-
     <div class="card">
         <h1>S.V. Downloader</h1>
         <div class="subtitle">Premium Link Saver</div>
-
-        <div class="input-group">
-            <input type="text" id="urlInput" placeholder="Paste YouTube, Insta, TikTok link..." autocomplete="off">
-        </div>
-
-        <button class="btn-main" id="processBtn" onclick="startSwarm()">
+        
+        <input type="text" id="urlInput" placeholder="Paste YouTube, Insta, TikTok link..." autocomplete="off">
+        
+        <button class="btn-main" id="processBtn" onclick="startDownload()">
             <span id="btnText">Download Now</span>
             <div class="loader" id="loader"></div>
         </button>
         
-        <div id="status" class="status-msg"></div>
+        <div id="status" class="status"></div>
 
         <div id="result">
             <img id="thumbImg" class="thumb" src="">
@@ -183,21 +82,7 @@
     </div>
 
     <script>
-        // CLIENT-SIDE SWARM CONFIGURATION
-        const APIS = [
-            "https://cobalt-api.ayo.tf/api/json",
-            "https://cobalt.steamship.site/api/json",
-            "https://co.wuk.sh/api/json",
-            "https://cobalt.q13.fr/api/json"
-        ];
-        
-        // These proxies bypass the browser CORS block
-        const PROXIES = [
-            "https://corsproxy.io/?",
-            "https://api.allorigins.win/raw?url="
-        ];
-
-        async function startSwarm() {
+        async function startDownload() {
             const url = document.getElementById('urlInput').value.trim();
             const btn = document.getElementById('processBtn');
             const btnText = document.getElementById('btnText');
@@ -207,69 +92,40 @@
 
             if (!url) { status.innerText = "Please paste a link first"; return; }
 
-            // RESET UI
+            // Special handling for TeraBox (Cannot be done via API)
+            if (url.includes('terabox') || url.includes('1024tera')) {
+                status.innerHTML = "<span style='color:#00f2ff'>TeraBox Detected! Redirecting to Specialist...</span>";
+                setTimeout(() => { window.location.href = `https://teraboxdownloader.com/?url=${encodeURIComponent(url)}`; }, 1500);
+                return;
+            }
+
             status.innerText = "";
             result.style.display = "none";
             btnText.style.display = "none";
             loader.style.display = "block";
             btn.disabled = true;
 
-            // SPECIAL: TERABOX
-            if (url.includes('terabox') || url.includes('1024tera')) {
-                setTimeout(() => {
-                    window.location.href = `https://teraboxdownloader.com/?url=${encodeURIComponent(url)}`;
-                    resetBtn();
-                }, 1000);
-                return;
-            }
+            try {
+                // Call OUR Python Backend (The Lenient Proxy)
+                const response = await fetch('/process', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ url: url })
+                });
 
-            // START SWARM
-            let success = false;
-            
-            // Loop through APIs
-            for (let api of APIS) {
-                if (success) break;
-                // Loop through Proxies
-                for (let proxy of PROXIES) {
-                    try {
-                        const targetUrl = proxy + encodeURIComponent(api);
-                        console.log(`Trying ${api} via ${proxy}`);
-                        
-                        const response = await fetch(targetUrl, {
-                            method: 'POST',
-                            headers: {
-                                'Accept': 'application/json',
-                                'Content-Type': 'application/json',
-                                'Origin': 'https://cobalt.tools' 
-                            },
-                            body: JSON.stringify({
-                                url: url,
-                                filenamePattern: "basic"
-                            })
-                        });
+                const res = await response.json();
 
-                        const data = await response.json();
-                        
-                        if (data.url || data.picker) {
-                            showSuccess(data);
-                            success = true;
-                            break; 
-                        }
-                    } catch (e) {
-                        console.log("Node failed, switching...");
-                        continue;
-                    }
-                }
-            }
+                if (!res.success) throw new Error(res.error);
 
-            if (!success) {
-                status.innerText = "All servers busy. Trying backup...";
-                // Final Fallback: Direct User to a working site
-                setTimeout(() => {
-                   if(url.includes('youtube') || url.includes('youtu.be')) window.open(`https://ssyoutube.com/en/result?url=${url}`, '_blank');
-                   else window.open(`https://publer.io/tools/media-downloader?url=${url}`, '_blank');
-                   resetBtn();
-                }, 1500);
+                showSuccess(res.data);
+
+            } catch (e) {
+                status.innerText = e.message || "Failed to fetch video.";
+            } finally {
+                btn.disabled = false;
+                loader.style.display = "none";
+                btnText.style.display = "block";
+                btnText.innerText = "Download Another";
             }
         }
 
@@ -278,23 +134,22 @@
             const thumb = document.getElementById('thumbImg');
             const linksDiv = document.getElementById('downloadLinks');
 
-            // Thumbnail
-            if (data.picker && data.picker[0].thumb) thumb.src = data.picker[0].thumb;
-            else if (data.thumb) thumb.src = data.thumb;
-            else thumb.src = "https://via.placeholder.com/400x200/000000/00f2ff?text=Ready";
+            let thumbUrl = "https://via.placeholder.com/400x200?text=Video+Found";
+            if (data.picker && data.picker[0].thumb) thumbUrl = data.picker[0].thumb;
+            else if (data.thumb) thumbUrl = data.thumb;
+            thumb.src = thumbUrl;
 
             linksDiv.innerHTML = "";
 
             if (data.picker) {
                 data.picker.forEach(item => {
-                    createButton(item.url, item.type === 'video' ? 'Download Video' : 'Download Audio', linksDiv);
+                    createButton(item.url, item.type === 'video' ? 'Save Video (HD)' : 'Save Audio', linksDiv);
                 });
             } else if (data.url) {
-                createButton(data.url, 'Download Video', linksDiv);
+                createButton(data.url, 'Save Video (HD)', linksDiv);
             }
 
             result.style.display = "block";
-            resetBtn();
         }
 
         function createButton(url, text, container) {
@@ -304,16 +159,6 @@
             a.target = '_blank';
             a.innerHTML = `<i class="fas fa-download"></i> ${text}`;
             container.appendChild(a);
-        }
-
-        function resetBtn() {
-            const btn = document.getElementById('processBtn');
-            const btnText = document.getElementById('btnText');
-            const loader = document.getElementById('loader');
-            btn.disabled = false;
-            loader.style.display = "none";
-            btnText.style.display = "block";
-            btnText.innerText = "Download Another";
         }
     </script>
 </body>
