@@ -6,7 +6,6 @@
     <title>S.V. Premium Downloader</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-        /* --- CORE ANIMATIONS & THEME --- */
         :root {
             --primary: #00f2ff;
             --secondary: #ff0055;
@@ -26,7 +25,6 @@
             justify-content: center;
             align-items: center;
             overflow: hidden;
-            /* Animated Background Mesh */
             background-image: 
                 radial-gradient(circle at 10% 20%, rgba(0, 242, 255, 0.15) 0%, transparent 40%),
                 radial-gradient(circle at 90% 80%, rgba(255, 0, 85, 0.15) 0%, transparent 40%);
@@ -38,7 +36,6 @@
             100% { background-size: 110% 110%; }
         }
 
-        /* --- GLASS CARD --- */
         .card {
             background: var(--glass);
             backdrop-filter: blur(20px);
@@ -50,7 +47,6 @@
             max-width: 420px;
             box-shadow: 0 20px 50px rgba(0,0,0,0.5);
             position: relative;
-            z-index: 10;
             transform: translateY(20px);
             opacity: 0;
             animation: slideUp 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
@@ -58,7 +54,6 @@
 
         @keyframes slideUp { to { transform: translateY(0); opacity: 1; } }
 
-        /* --- TYPOGRAPHY --- */
         h1 {
             font-size: 28px;
             font-weight: 800;
@@ -67,7 +62,6 @@
             background: linear-gradient(135deg, #fff, var(--primary));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            letter-spacing: -0.5px;
         }
 
         .subtitle {
@@ -79,11 +73,7 @@
             letter-spacing: 2px;
         }
 
-        /* --- INPUTS --- */
-        .input-group {
-            position: relative;
-            margin-bottom: 20px;
-        }
+        .input-group { position: relative; margin-bottom: 20px; }
 
         input {
             width: 100%;
@@ -94,8 +84,8 @@
             color: white;
             font-size: 16px;
             box-sizing: border-box;
-            transition: all 0.3s;
             outline: none;
+            transition: 0.3s;
         }
 
         input:focus {
@@ -104,31 +94,6 @@
             background: rgba(0,0,0,0.5);
         }
 
-        /* --- TOGGLE SWITCH --- */
-        .mode-switch {
-            display: flex;
-            background: rgba(0,0,0,0.3);
-            padding: 5px;
-            border-radius: 12px;
-            margin-bottom: 20px;
-        }
-        .mode-opt {
-            flex: 1;
-            text-align: center;
-            padding: 10px;
-            font-size: 14px;
-            cursor: pointer;
-            border-radius: 8px;
-            transition: 0.3s;
-            color: #888;
-        }
-        .mode-opt.active {
-            background: var(--border);
-            color: white;
-            font-weight: bold;
-        }
-
-        /* --- BUTTONS --- */
         .btn-main {
             width: 100%;
             padding: 18px;
@@ -146,22 +111,9 @@
             overflow: hidden;
         }
         
-        .btn-main::after {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle, rgba(255,255,255,0.3) 0%, transparent 60%);
-            transform: scale(0);
-            transition: 0.5s;
-        }
-        
-        .btn-main:hover::after { transform: scale(1); }
-        .btn-main:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(0, 242, 255, 0.3); }
+        .btn-main:disabled { background: #555; cursor: not-allowed; }
+        .btn-main:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(0, 242, 255, 0.3); }
 
-        /* --- RESULTS AREA --- */
         #result { display: none; margin-top: 30px; animation: fadeIn 0.5s; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
@@ -190,12 +142,8 @@
             margin-bottom: 10px;
         }
         
-        .dl-action:hover {
-            background: var(--primary);
-            color: #000;
-        }
+        .dl-action:hover { background: var(--primary); color: #000; }
 
-        /* --- LOADING --- */
         .loader {
             display: none;
             width: 24px;
@@ -208,8 +156,7 @@
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        .status-msg { text-align: center; font-size: 13px; color: #ff4444; margin-top: 10px; }
-
+        .status-msg { text-align: center; font-size: 13px; color: #ff4444; margin-top: 10px; min-height: 20px; }
     </style>
 </head>
 <body>
@@ -218,20 +165,11 @@
         <h1>S.V. Downloader</h1>
         <div class="subtitle">Premium Link Saver</div>
 
-        <div class="mode-switch">
-            <div class="mode-opt active" id="mode-video" onclick="setMode('video')">
-                <i class="fas fa-video"></i> Video
-            </div>
-            <div class="mode-opt" id="mode-audio" onclick="setMode('audio')">
-                <i class="fas fa-music"></i> Audio
-            </div>
-        </div>
-
         <div class="input-group">
             <input type="text" id="urlInput" placeholder="Paste YouTube, Insta, TikTok link..." autocomplete="off">
         </div>
 
-        <button class="btn-main" id="processBtn" onclick="startDownload()">
+        <button class="btn-main" id="processBtn" onclick="startSwarm()">
             <span id="btnText">Download Now</span>
             <div class="loader" id="loader"></div>
         </button>
@@ -245,15 +183,21 @@
     </div>
 
     <script>
-        let currentMode = 'video';
+        // CLIENT-SIDE SWARM CONFIGURATION
+        const APIS = [
+            "https://cobalt-api.ayo.tf/api/json",
+            "https://cobalt.steamship.site/api/json",
+            "https://co.wuk.sh/api/json",
+            "https://cobalt.q13.fr/api/json"
+        ];
+        
+        // These proxies bypass the browser CORS block
+        const PROXIES = [
+            "https://corsproxy.io/?",
+            "https://api.allorigins.win/raw?url="
+        ];
 
-        function setMode(mode) {
-            currentMode = mode;
-            document.getElementById('mode-video').className = mode === 'video' ? 'mode-opt active' : 'mode-opt';
-            document.getElementById('mode-audio').className = mode === 'audio' ? 'mode-opt active' : 'mode-opt';
-        }
-
-        async function startDownload() {
+        async function startSwarm() {
             const url = document.getElementById('urlInput').value.trim();
             const btn = document.getElementById('processBtn');
             const btnText = document.getElementById('btnText');
@@ -261,10 +205,7 @@
             const status = document.getElementById('status');
             const result = document.getElementById('result');
 
-            if (!url) {
-                status.innerText = "Please paste a valid link";
-                return;
-            }
+            if (!url) { status.innerText = "Please paste a link first"; return; }
 
             // RESET UI
             status.innerText = "";
@@ -273,30 +214,62 @@
             loader.style.display = "block";
             btn.disabled = true;
 
-            try {
-                // Call Python Backend
-                const response = await fetch('/process', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ url: url, mode: currentMode })
-                });
+            // SPECIAL: TERABOX
+            if (url.includes('terabox') || url.includes('1024tera')) {
+                setTimeout(() => {
+                    window.location.href = `https://teraboxdownloader.com/?url=${encodeURIComponent(url)}`;
+                    resetBtn();
+                }, 1000);
+                return;
+            }
 
-                const res = await response.json();
+            // START SWARM
+            let success = false;
+            
+            // Loop through APIs
+            for (let api of APIS) {
+                if (success) break;
+                // Loop through Proxies
+                for (let proxy of PROXIES) {
+                    try {
+                        const targetUrl = proxy + encodeURIComponent(api);
+                        console.log(`Trying ${api} via ${proxy}`);
+                        
+                        const response = await fetch(targetUrl, {
+                            method: 'POST',
+                            headers: {
+                                'Accept': 'application/json',
+                                'Content-Type': 'application/json',
+                                'Origin': 'https://cobalt.tools' 
+                            },
+                            body: JSON.stringify({
+                                url: url,
+                                filenamePattern: "basic"
+                            })
+                        });
 
-                if (!res.success) {
-                    throw new Error(res.error || "Failed to fetch media");
+                        const data = await response.json();
+                        
+                        if (data.url || data.picker) {
+                            showSuccess(data);
+                            success = true;
+                            break; 
+                        }
+                    } catch (e) {
+                        console.log("Node failed, switching...");
+                        continue;
+                    }
                 }
+            }
 
-                showSuccess(res.data);
-
-            } catch (e) {
-                status.innerText = e.message;
-            } finally {
-                // Restore Button
-                btn.disabled = false;
-                loader.style.display = "none";
-                btnText.style.display = "block";
-                btnText.innerText = "Download Another";
+            if (!success) {
+                status.innerText = "All servers busy. Trying backup...";
+                // Final Fallback: Direct User to a working site
+                setTimeout(() => {
+                   if(url.includes('youtube') || url.includes('youtu.be')) window.open(`https://ssyoutube.com/en/result?url=${url}`, '_blank');
+                   else window.open(`https://publer.io/tools/media-downloader?url=${url}`, '_blank');
+                   resetBtn();
+                }, 1500);
             }
         }
 
@@ -305,35 +278,42 @@
             const thumb = document.getElementById('thumbImg');
             const linksDiv = document.getElementById('downloadLinks');
 
-            // Set Thumbnail
-            let thumbUrl = "https://via.placeholder.com/400x200/000000/00f2ff?text=Download+Ready";
-            if (data.picker && data.picker[0].thumb) thumbUrl = data.picker[0].thumb;
-            else if (data.thumb) thumbUrl = data.thumb;
-            thumb.src = thumbUrl;
+            // Thumbnail
+            if (data.picker && data.picker[0].thumb) thumb.src = data.picker[0].thumb;
+            else if (data.thumb) thumb.src = data.thumb;
+            else thumb.src = "https://via.placeholder.com/400x200/000000/00f2ff?text=Ready";
 
-            // Clear old links
             linksDiv.innerHTML = "";
 
-            // Create Direct Buttons
-            // Cobalt returns direct links. We just put them in a button.
             if (data.picker) {
                 data.picker.forEach(item => {
-                    createButton(item.url, currentMode === 'video' ? 'Save Video (HD)' : 'Save Audio (MP3)', linksDiv);
+                    createButton(item.url, item.type === 'video' ? 'Download Video' : 'Download Audio', linksDiv);
                 });
             } else if (data.url) {
-                createButton(data.url, currentMode === 'video' ? 'Save Video (HD)' : 'Save Audio (MP3)', linksDiv);
+                createButton(data.url, 'Download Video', linksDiv);
             }
 
             result.style.display = "block";
+            resetBtn();
         }
 
         function createButton(url, text, container) {
             const a = document.createElement('a');
             a.href = url;
             a.className = 'dl-action';
-            a.target = '_blank'; // Opens in new tab to force browser download
+            a.target = '_blank';
             a.innerHTML = `<i class="fas fa-download"></i> ${text}`;
             container.appendChild(a);
+        }
+
+        function resetBtn() {
+            const btn = document.getElementById('processBtn');
+            const btnText = document.getElementById('btnText');
+            const loader = document.getElementById('loader');
+            btn.disabled = false;
+            loader.style.display = "none";
+            btnText.style.display = "block";
+            btnText.innerText = "Download Another";
         }
     </script>
 </body>
