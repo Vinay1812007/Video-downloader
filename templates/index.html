@@ -2,229 +2,373 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>S.V. Ultimate Downloader</title>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    <title>S.V. Ultra Downloader</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
-        :root { --primary: #00f2ff; --bg: #050505; --glass: rgba(255, 255, 255, 0.05); }
-        body {
-            margin: 0; padding: 0; font-family: 'Inter', sans-serif;
-            background-color: var(--bg); color: white; height: 100vh;
-            display: flex; justify-content: center; align-items: center; overflow: hidden;
-            background-image: radial-gradient(circle at 10% 20%, rgba(0, 242, 255, 0.15) 0%, transparent 40%), radial-gradient(circle at 90% 80%, rgba(255, 0, 85, 0.15) 0%, transparent 40%);
-            animation: bgPulse 10s infinite alternate;
+        /* --- CYBERPUNK THEME --- */
+        :root {
+            --primary: #00f3ff;
+            --secondary: #bc13fe;
+            --bg: #050510;
+            --glass: rgba(20, 20, 40, 0.7);
+            --border: rgba(255, 255, 255, 0.08);
         }
-        @keyframes bgPulse { 0% { background-size: 100% 100%; } 100% { background-size: 110% 110%; } }
 
-        .card {
-            background: var(--glass); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 24px; padding: 2.5rem; width: 90%; max-width: 420px;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.5); text-align: center; position: relative;
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: var(--bg);
+            color: white;
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            background-image: 
+                linear-gradient(45deg, rgba(0, 243, 255, 0.1) 0%, transparent 70%),
+                linear-gradient(-45deg, rgba(188, 19, 254, 0.1) 0%, transparent 70%);
+            background-size: cover;
         }
+
+        /* --- UI CARD --- */
+        .card {
+            background: var(--glass);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border: 1px solid var(--border);
+            width: 90%;
+            max-width: 450px;
+            padding: 2.5rem;
+            border-radius: 30px;
+            box-shadow: 
+                0 0 40px rgba(0, 243, 255, 0.1),
+                inset 0 0 20px rgba(255, 255, 255, 0.02);
+            text-align: center;
+            position: relative;
+            transform: translateY(20px);
+            opacity: 0;
+            animation: slideUp 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+        }
+
+        @keyframes slideUp { to { transform: translateY(0); opacity: 1; } }
 
         h1 {
-            font-size: 28px; font-weight: 800; margin-bottom: 5px;
-            background: linear-gradient(135deg, #fff, var(--primary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            font-weight: 900;
+            font-size: 32px;
+            margin: 0 0 5px 0;
+            background: linear-gradient(to right, #fff, var(--primary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 20px rgba(0, 243, 255, 0.3);
         }
-        .subtitle { color: #888; font-size: 12px; margin-bottom: 30px; text-transform: uppercase; letter-spacing: 2px; }
+
+        .subtitle {
+            color: #889;
+            font-size: 13px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 30px;
+        }
+
+        /* --- INPUT AREA --- */
+        .input-box {
+            position: relative;
+            margin-bottom: 25px;
+        }
 
         input {
-            width: 100%; background: rgba(0,0,0,0.3); border: 2px solid rgba(255,255,255,0.1);
-            padding: 16px; border-radius: 16px; color: white; font-size: 16px; box-sizing: border-box; outline: none; margin-bottom: 20px; transition: 0.3s;
-        }
-        input:focus { border-color: var(--primary); background: rgba(0,0,0,0.5); box-shadow: 0 0 15px rgba(0, 242, 255, 0.2); }
-
-        .btn-main {
-            width: 100%; padding: 18px; border-radius: 16px; border: none;
-            background: linear-gradient(135deg, var(--primary), #00aaff); color: #000;
-            font-weight: 800; font-size: 16px; cursor: pointer; text-transform: uppercase;
+            width: 100%;
+            padding: 18px 20px;
+            padding-right: 50px;
+            background: rgba(0,0,0,0.3);
+            border: 2px solid var(--border);
+            border-radius: 18px;
+            color: #fff;
+            font-size: 16px;
+            box-sizing: border-box;
+            outline: none;
             transition: 0.3s;
         }
-        .btn-main:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(0, 242, 255, 0.3); }
-        .btn-main:disabled { background: #555; color: #888; cursor: not-allowed; transform: none; box-shadow: none; }
 
+        input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 25px rgba(0, 243, 255, 0.15);
+            background: rgba(0,0,0,0.5);
+        }
+
+        /* --- BUTTON --- */
+        .btn-main {
+            width: 100%;
+            padding: 18px;
+            border: none;
+            border-radius: 18px;
+            background: linear-gradient(135deg, var(--primary), #0066ff);
+            color: #000;
+            font-weight: 800;
+            font-size: 16px;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: 0.3s;
+            position: relative;
+            overflow: hidden;
+            letter-spacing: 1px;
+        }
+
+        .btn-main:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(0, 243, 255, 0.4);
+        }
+        
+        .btn-main:disabled {
+            background: #333;
+            color: #666;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        /* --- LOADER --- */
         .loader {
-            display: none; width: 24px; height: 24px; border: 3px solid rgba(0,0,0,0.3);
-            border-top: 3px solid #000; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto;
+            display: none;
+            width: 24px;
+            height: 24px;
+            border: 3px solid rgba(0,0,0,0.2);
+            border-top: 3px solid #000;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto;
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        #result { display: none; margin-top: 30px; animation: fadeIn 0.5s; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
-        .thumb { width: 100%; height: 180px; border-radius: 16px; object-fit: cover; border: 1px solid rgba(255,255,255,0.1); margin-bottom: 15px; background: #000; }
-
-        .dl-action {
-            display: block; width: 100%; background: #1a1a1f; border: 1px solid var(--primary);
-            color: var(--primary); padding: 15px; text-decoration: none; border-radius: 12px;
-            font-weight: bold; margin-bottom: 10px; box-sizing: border-box; transition: 0.3s;
+        /* --- STATUS & RESULTS --- */
+        .status {
+            margin-top: 20px;
+            font-size: 13px;
+            min-height: 20px;
+            font-weight: 500;
         }
-        .dl-action:hover { background: var(--primary); color: #000; }
-        
-        .status { margin-top: 15px; font-size: 13px; color: #ff4444; min-height: 20px; }
+        .status.error { color: #ff4466; }
+        .status.success { color: var(--primary); }
+
+        #result {
+            display: none;
+            margin-top: 30px;
+            animation: fadeIn 0.5s ease;
+        }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .thumb {
+            width: 100%;
+            height: 200px;
+            border-radius: 20px;
+            object-fit: cover;
+            border: 1px solid var(--border);
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        .dl-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            padding: 16px;
+            margin-bottom: 12px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            color: #fff;
+            text-decoration: none;
+            font-weight: 600;
+            transition: 0.3s;
+            box-sizing: border-box;
+        }
+
+        .dl-btn i { margin-right: 10px; }
+        .dl-btn:hover {
+            background: var(--primary);
+            color: #000;
+            border-color: var(--primary);
+        }
+
     </style>
 </head>
 <body>
+
     <div class="card">
-        <h1>S.V. Downloader</h1>
-        <div class="subtitle">Ultimate Media Saver</div>
-        
-        <input type="text" id="urlInput" placeholder="Paste YouTube, Insta, TikTok link..." autocomplete="off">
-        
-        <button class="btn-main" id="processBtn" onclick="startClientSwarm()">
-            <span id="btnText">Download Now</span>
+        <h1>S.V. DOWNLOADER</h1>
+        <div class="subtitle">Ultimate Universal Saver</div>
+
+        <div class="input-box">
+            <input type="text" id="urlInput" placeholder="Paste link (Insta, YT, TikTok)..." autocomplete="off">
+        </div>
+
+        <button class="btn-main" id="mainBtn" onclick="startEngine()">
+            <span id="btnText">DOWNLOAD NOW</span>
             <div class="loader" id="loader"></div>
         </button>
-        
+
         <div id="status" class="status"></div>
 
         <div id="result">
-            <img id="thumbImg" class="thumb" src="">
-            <div id="downloadLinks"></div>
+            <img id="thumb" class="thumb" src="">
+            <div id="links"></div>
         </div>
     </div>
 
     <script>
-        // 1. THE NODES (Engines) - Mixed List
-        const APIS = [
+        // --- 1. THE ENGINE ROOM ---
+        
+        // List of Cobalt Mirrors (Engines)
+        const ENGINES = [
             "https://cobalt-api.ayo.tf/api/json",
             "https://cobalt.steamship.site/api/json",
             "https://co.wuk.sh/api/json",
             "https://cobalt.q13.fr/api/json",
-            "https://cobalt.rudart.cc/api/json",
             "https://api.cobalt.tools/api/json"
         ];
 
-        async function startClientSwarm() {
+        // List of Tunnels (To bypass Browser Security)
+        const TUNNELS = [
+            (url) => `https://corsproxy.io/?${encodeURIComponent(url)}`,
+            (url) => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
+            (url) => `https://thingproxy.freeboard.io/fetch/${url}`
+        ];
+
+        async function startEngine() {
             const url = document.getElementById('urlInput').value.trim();
-            const btn = document.getElementById('processBtn');
+            const btn = document.getElementById('mainBtn');
             const btnText = document.getElementById('btnText');
             const loader = document.getElementById('loader');
             const status = document.getElementById('status');
             const result = document.getElementById('result');
 
-            if (!url) { status.innerText = "Please paste a link first"; return; }
+            if (!url) {
+                setStatus("Please paste a link first.", "error");
+                return;
+            }
 
-            // RESET
-            status.innerText = "";
+            // UI Reset
+            setStatus("", "");
             result.style.display = "none";
             btnText.style.display = "none";
             loader.style.display = "block";
             btn.disabled = true;
 
-            // SPECIAL: TERABOX (Must be external)
+            // SPECIAL: TeraBox
             if (url.includes('terabox') || url.includes('1024tera')) {
+                // Direct redirect for TeraBox (Only exception because no API exists)
                 setTimeout(() => {
                     window.location.href = `https://teraboxdownloader.com/?url=${encodeURIComponent(url)}`;
                     resetBtn();
-                }, 1000);
+                }, 1500);
                 return;
             }
 
             let success = false;
 
-            // CLIENT-SIDE SWARM LOGIC
-            // We loop through APIs and use 'allorigins' to proxy the request.
-            for (let api of APIS) {
+            // --- THE SWARM LOOP ---
+            // 1. Loop through every Engine
+            for (let engine of ENGINES) {
                 if (success) break;
-                
-                try {
-                    console.log("Trying: " + api);
-                    
-                    // The Payload (Simplified to avoid 400 Error)
-                    const payload = {
-                        url: url
-                    };
 
-                    // We wrap our POST request inside AllOrigins to bypass CORS
-                    // This is the trick that makes it work on your browser without a server.
-                    const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(api)}`;
-                    
-                    // Note: AllOrigins is GET only, but some Cobalt APIs allow data in specific formats.
-                    // Instead, let's use a Direct fetch with 'no-cors' check first, 
-                    // OR try the 'corsproxy.io' which supports POST.
-                    
-                    const targetUrl = "https://corsproxy.io/?" + api;
-                    
-                    const response = await fetch(targetUrl, {
-                        method: 'POST',
-                        headers: {
-                            'Accept': 'application/json',
-                            'Content-Type': 'application/json',
-                            'Origin': 'https://cobalt.tools'
-                        },
-                        body: JSON.stringify(payload)
-                    });
+                // 2. Loop through every Tunnel
+                for (let tunnel of TUNNELS) {
+                    try {
+                        const target = tunnel(engine);
+                        console.log(`Trying: ${target}`);
 
-                    const data = await response.json();
-                    
-                    if (data.status === 'error' || data.text) {
-                        // If 400 happens here, it's specific to that server, try next.
-                        continue; 
+                        // 3. Clean Payload (No complex settings to avoid 400 error)
+                        const payload = { url: url };
+
+                        const response = await fetch(target, {
+                            method: 'POST',
+                            headers: {
+                                'Accept': 'application/json',
+                                'Content-Type': 'application/json',
+                                'Origin': 'https://cobalt.tools' // Header spoofing
+                            },
+                            body: JSON.stringify(payload)
+                        });
+
+                        const data = await response.json();
+
+                        // 4. Validate Response
+                        if (data.status === 'error' || data.text) {
+                            continue; // Engine specific error, try next
+                        }
+
+                        if (data.url || data.picker) {
+                            showResult(data);
+                            success = true;
+                            break; // Success! Stop looping.
+                        }
+
+                    } catch (e) {
+                        console.log("Tunnel failed, switching...");
                     }
-
-                    if (data.url || data.picker) {
-                        showSuccess(data);
-                        success = true;
-                        break;
-                    }
-                } catch (e) {
-                    console.log("Node failed: " + e);
-                    continue;
                 }
             }
 
+            // --- FAILURE HANDLER ---
             if (!success) {
-                status.innerText = "All nodes busy. Opening Backup...";
-                setTimeout(() => {
-                   if(url.includes('youtube') || url.includes('youtu.be')) window.open(`https://ssyoutube.com/en/result?url=${url}`, '_blank');
-                   else window.open(`https://publer.io/tools/media-downloader?url=${url}`, '_blank');
-                   resetBtn();
-                }, 1500);
+                setStatus("Server Busy. Please try again in 5 seconds.", "error");
+                resetBtn();
             }
         }
 
-        function showSuccess(data) {
+        function showResult(data) {
             const result = document.getElementById('result');
-            const thumb = document.getElementById('thumbImg');
-            const linksDiv = document.getElementById('downloadLinks');
+            const thumb = document.getElementById('thumb');
+            const links = document.getElementById('links');
 
-            let thumbUrl = "https://via.placeholder.com/400x200/000000/00f2ff?text=Ready";
-            if (data.picker && data.picker[0].thumb) thumbUrl = data.picker[0].thumb;
-            else if (data.thumb) thumbUrl = data.thumb;
-            thumb.src = thumbUrl;
+            setStatus("Download Ready!", "success");
 
-            linksDiv.innerHTML = "";
+            // Set Thumbnail
+            let thumbSrc = "https://via.placeholder.com/400x200/000000/00f2ff?text=Media+Found";
+            if (data.picker && data.picker[0].thumb) thumbSrc = data.picker[0].thumb;
+            else if (data.thumb) thumbSrc = data.thumb;
+            thumb.src = thumbSrc;
+
+            // Generate Buttons
+            links.innerHTML = "";
 
             if (data.picker) {
                 data.picker.forEach(item => {
-                    createButton(item.url, item.type === 'video' ? 'Download Video' : 'Download Audio', linksDiv);
+                    createBtn(item.url, item.type === 'video' ? 'Download Video' : 'Download Audio', links);
                 });
             } else if (data.url) {
-                createButton(data.url, 'Download Video', linksDiv);
+                createBtn(data.url, 'Download Video', links);
             }
 
             result.style.display = "block";
             resetBtn();
         }
 
-        function createButton(url, text, container) {
-            const a = document.createElement('a');
-            a.href = url;
-            a.className = 'dl-action';
-            a.target = '_blank';
-            a.innerHTML = `<i class="fas fa-download"></i> ${text}`;
-            container.appendChild(a);
+        function createBtn(url, text, container) {
+            const btn = document.createElement('a');
+            btn.href = url;
+            btn.className = 'dl-btn';
+            btn.target = '_blank';
+            btn.innerHTML = `<i class="fas fa-download"></i> ${text}`;
+            container.appendChild(btn);
+        }
+
+        function setStatus(msg, type) {
+            const el = document.getElementById('status');
+            el.innerText = msg;
+            el.className = 'status ' + type;
         }
 
         function resetBtn() {
-            const btn = document.getElementById('processBtn');
+            const btn = document.getElementById('mainBtn');
             const btnText = document.getElementById('btnText');
             const loader = document.getElementById('loader');
             btn.disabled = false;
             loader.style.display = "none";
             btnText.style.display = "block";
-            btnText.innerText = "Download Another";
+            btnText.innerText = "DOWNLOAD AGAIN";
         }
     </script>
 </body>
