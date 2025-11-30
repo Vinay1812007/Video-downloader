@@ -9,7 +9,6 @@ app = Flask(__name__)
 CORS(app)
 
 # --- CONFIGURATION ---
-# 1. DOWNLOADER SERVERS (The Swarm)
 SERVERS = [
     "https://cobalt.steamship.site/api/json",
     "https://cobalt.rudart.cc/api/json", 
@@ -18,20 +17,21 @@ SERVERS = [
     "https://api.cobalt.tools/api/json"
 ]
 
-# 2. GEMINI AI CONFIGURATION
-# It tries to find the API key in Render's settings.
+# Configure AI
 GEMINI_KEY = os.environ.get("GEMINI_API_KEY")
 
 if GEMINI_KEY:
-    genai.configure(api_key=GEMINI_KEY)
-    # Use the lightweight "Flash" model for speed
-    model = genai.GenerativeModel('gemini-1.5-flash', system_instruction="You are a helpful support assistant for 'S.V. Downloader'. You help users download videos from YouTube, Instagram, and TikTok. Keep answers short and friendly.")
+    try:
+        genai.configure(api_key=GEMINI_KEY)
+        # We use the standard model without system_instruction in constructor for maximum compatibility
+        model = genai.GenerativeModel('gemini-1.5-flash')
+    except Exception as e:
+        print(f"AI Config Error: {e}")
 
 @app.route('/')
 def home():
     return render_template('index.html')
 
-# --- DOWNLOADER ROUTE ---
 @app.route('/process', methods=['POST'])
 def process():
     data = request.json
@@ -67,21 +67,32 @@ def process():
 
     return jsonify({"success": False, "error": f"Busy. Last error: {last_error}"})
 
-# --- NEW: SUPPORT CHAT ROUTE ---
 @app.route('/chat', methods=['POST'])
 def chat():
     if not GEMINI_KEY:
-        return jsonify({"text": "Error: AI Support is not configured yet (Missing API Key)."})
+        return jsonify({"text": "Error: API Key is missing in Render Settings."})
     
     data = request.json
     user_msg = data.get('message')
     
     try:
-        # Ask Gemini
-        response = model.generate_content(user_msg)
+        # 1. Add System Instruction manually to the prompt (Safer)
+        full_prompt = f"System: You are a helpful support assistant for S.V. Downloader. Keep answers short.\nUser: {user_msg}"
+        
+        # 2. Disable Safety Filters (Prevents random blocks)
+        safety_settings = [
+            {"category": "HARM_CATEGORY_HARASSMENT", "threshold": "BLOCK_NONE"},
+            {"category": "HARM_CATEGORY_HATE_SPEECH", "threshold": "BLOCK_NONE"},
+            {"category": "HARM_CATEGORY_SEXUALLY_EXPLICIT", "threshold": "BLOCK_NONE"},
+            {"category": "HARM_CATEGORY_DANGEROUS_CONTENT", "threshold": "BLOCK_NONE"}
+        ]
+
+        response = model.generate_content(full_prompt, safety_settings=safety_settings)
         return jsonify({"text": response.text})
+        
     except Exception as e:
-        return jsonify({"text": "Sorry, I am having trouble connecting right now."})
+        # DEBUG MODE: This will show the REAL error on your screen
+        return jsonify({"text": f"System Error: {str(e)}"})
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
