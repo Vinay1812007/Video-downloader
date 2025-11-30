@@ -2,373 +2,154 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-    <title>S.V. Ultra Downloader</title>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>S.V. Premium Downloader</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-        /* --- CYBERPUNK THEME --- */
-        :root {
-            --primary: #00f3ff;
-            --secondary: #bc13fe;
-            --bg: #050510;
-            --glass: rgba(20, 20, 40, 0.7);
-            --border: rgba(255, 255, 255, 0.08);
-        }
+        /* --- THEME --- */
+        :root { --primary: #00f2ff; --bg: #050505; --glass: rgba(255, 255, 255, 0.05); }
+        body { margin: 0; font-family: 'Inter', sans-serif; background: var(--bg); color: white; height: 100vh; overflow: hidden; display: flex; justify-content: center; align-items: center; 
+               background-image: radial-gradient(circle at 10% 20%, rgba(0, 242, 255, 0.15) 0%, transparent 40%), radial-gradient(circle at 90% 80%, rgba(255, 0, 85, 0.15) 0%, transparent 40%); }
 
-        body {
-            font-family: 'Segoe UI', sans-serif;
-            background: var(--bg);
-            color: white;
-            margin: 0;
-            height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            overflow: hidden;
-            background-image: 
-                linear-gradient(45deg, rgba(0, 243, 255, 0.1) 0%, transparent 70%),
-                linear-gradient(-45deg, rgba(188, 19, 254, 0.1) 0%, transparent 70%);
-            background-size: cover;
-        }
-
-        /* --- UI CARD --- */
-        .card {
-            background: var(--glass);
-            backdrop-filter: blur(25px);
-            -webkit-backdrop-filter: blur(25px);
-            border: 1px solid var(--border);
-            width: 90%;
-            max-width: 450px;
-            padding: 2.5rem;
-            border-radius: 30px;
-            box-shadow: 
-                0 0 40px rgba(0, 243, 255, 0.1),
-                inset 0 0 20px rgba(255, 255, 255, 0.02);
-            text-align: center;
-            position: relative;
-            transform: translateY(20px);
-            opacity: 0;
-            animation: slideUp 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
-        }
-
-        @keyframes slideUp { to { transform: translateY(0); opacity: 1; } }
-
-        h1 {
-            font-weight: 900;
-            font-size: 32px;
-            margin: 0 0 5px 0;
-            background: linear-gradient(to right, #fff, var(--primary));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            text-shadow: 0 0 20px rgba(0, 243, 255, 0.3);
-        }
-
-        .subtitle {
-            color: #889;
-            font-size: 13px;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            margin-bottom: 30px;
-        }
-
-        /* --- INPUT AREA --- */
-        .input-box {
-            position: relative;
-            margin-bottom: 25px;
-        }
-
-        input {
-            width: 100%;
-            padding: 18px 20px;
-            padding-right: 50px;
-            background: rgba(0,0,0,0.3);
-            border: 2px solid var(--border);
-            border-radius: 18px;
-            color: #fff;
-            font-size: 16px;
-            box-sizing: border-box;
-            outline: none;
-            transition: 0.3s;
-        }
-
-        input:focus {
-            border-color: var(--primary);
-            box-shadow: 0 0 25px rgba(0, 243, 255, 0.15);
-            background: rgba(0,0,0,0.5);
-        }
-
-        /* --- BUTTON --- */
-        .btn-main {
-            width: 100%;
-            padding: 18px;
-            border: none;
-            border-radius: 18px;
-            background: linear-gradient(135deg, var(--primary), #0066ff);
-            color: #000;
-            font-weight: 800;
-            font-size: 16px;
-            text-transform: uppercase;
-            cursor: pointer;
-            transition: 0.3s;
-            position: relative;
-            overflow: hidden;
-            letter-spacing: 1px;
-        }
-
-        .btn-main:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 10px 30px rgba(0, 243, 255, 0.4);
-        }
+        /* --- MAIN CARD --- */
+        .card { background: var(--glass); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.1); border-radius: 24px; padding: 2.5rem; width: 90%; max-width: 420px; text-align: center; position: relative; z-index: 10; }
+        h1 { background: linear-gradient(135deg, #fff, var(--primary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin: 0; }
+        .subtitle { color: #888; font-size: 12px; margin-bottom: 30px; letter-spacing: 2px; text-transform: uppercase; }
         
-        .btn-main:disabled {
-            background: #333;
-            color: #666;
-            cursor: not-allowed;
-            transform: none;
-            box-shadow: none;
-        }
+        input { width: 100%; background: rgba(0,0,0,0.3); border: 2px solid rgba(255,255,255,0.1); padding: 16px; border-radius: 16px; color: white; outline: none; box-sizing: border-box; margin-bottom: 20px; transition: 0.3s; }
+        input:focus { border-color: var(--primary); background: rgba(0,0,0,0.5); }
+        
+        .btn-main { width: 100%; padding: 18px; border-radius: 16px; border: none; background: linear-gradient(135deg, var(--primary), #00aaff); color: #000; font-weight: 800; cursor: pointer; text-transform: uppercase; transition: 0.3s; }
+        .btn-main:hover { transform: translateY(-3px); box-shadow: 0 0 20px rgba(0, 242, 255, 0.4); }
+        .btn-main:disabled { background: #555; cursor: not-allowed; }
 
-        /* --- LOADER --- */
-        .loader {
-            display: none;
-            width: 24px;
-            height: 24px;
-            border: 3px solid rgba(0,0,0,0.2);
-            border-top: 3px solid #000;
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-            margin: 0 auto;
-        }
+        .loader { display: none; margin: 0 auto; width: 24px; height: 24px; border: 3px solid rgba(0,0,0,0.3); border-top: 3px solid #000; border-radius: 50%; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        /* --- STATUS & RESULTS --- */
-        .status {
-            margin-top: 20px;
-            font-size: 13px;
-            min-height: 20px;
-            font-weight: 500;
-        }
-        .status.error { color: #ff4466; }
-        .status.success { color: var(--primary); }
-
-        #result {
-            display: none;
-            margin-top: 30px;
-            animation: fadeIn 0.5s ease;
-        }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-
-        .thumb {
-            width: 100%;
-            height: 200px;
-            border-radius: 20px;
-            object-fit: cover;
-            border: 1px solid var(--border);
-            margin-bottom: 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-        }
-
-        .dl-btn {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 100%;
-            padding: 16px;
-            margin-bottom: 12px;
-            background: rgba(255,255,255,0.05);
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            color: #fff;
-            text-decoration: none;
-            font-weight: 600;
-            transition: 0.3s;
-            box-sizing: border-box;
-        }
-
-        .dl-btn i { margin-right: 10px; }
-        .dl-btn:hover {
-            background: var(--primary);
-            color: #000;
-            border-color: var(--primary);
-        }
+        #result { display: none; margin-top: 20px; }
+        .thumb { width: 100%; height: 180px; border-radius: 16px; object-fit: cover; margin-bottom: 15px; border: 1px solid rgba(255,255,255,0.1); }
+        .dl-btn { display: block; background: #1a1a1f; border: 1px solid var(--primary); color: var(--primary); padding: 15px; text-decoration: none; border-radius: 12px; font-weight: bold; margin-bottom: 10px; transition: 0.3s; }
+        .dl-btn:hover { background: var(--primary); color: #000; }
+        
+        /* --- CHAT WIDGET --- */
+        .chat-toggle { position: fixed; bottom: 20px; right: 20px; width: 60px; height: 60px; background: var(--primary); border-radius: 50%; display: flex; justify-content: center; align-items: center; cursor: pointer; box-shadow: 0 0 20px rgba(0, 242, 255, 0.3); z-index: 100; transition: 0.3s; color: black; font-size: 24px; }
+        .chat-toggle:hover { transform: scale(1.1); }
+        
+        .chat-box { position: fixed; bottom: 90px; right: 20px; width: 300px; height: 400px; background: rgba(10, 10, 15, 0.95); backdrop-filter: blur(20px); border: 1px solid var(--primary); border-radius: 20px; display: none; flex-direction: column; overflow: hidden; z-index: 100; box-shadow: 0 0 30px rgba(0,0,0,0.8); }
+        .chat-header { background: var(--primary); color: black; padding: 15px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; }
+        .chat-content { flex: 1; padding: 15px; overflow-y: auto; font-size: 13px; display: flex; flex-direction: column; gap: 10px; }
+        .msg { padding: 8px 12px; border-radius: 10px; max-width: 80%; }
+        .msg-user { background: rgba(255,255,255,0.1); align-self: flex-end; color: white; }
+        .msg-ai { background: rgba(0, 242, 255, 0.2); align-self: flex-start; color: var(--primary); border: 1px solid rgba(0, 242, 255, 0.3); }
+        
+        .chat-input-area { display: flex; border-top: 1px solid rgba(255,255,255,0.1); padding: 10px; }
+        .chat-input { flex: 1; background: transparent; border: none; color: white; outline: none; padding: 5px; }
+        .chat-send { color: var(--primary); cursor: pointer; font-size: 18px; margin-left: 10px; }
 
     </style>
 </head>
 <body>
 
     <div class="card">
-        <h1>S.V. DOWNLOADER</h1>
-        <div class="subtitle">Ultimate Universal Saver</div>
-
-        <div class="input-box">
-            <input type="text" id="urlInput" placeholder="Paste link (Insta, YT, TikTok)..." autocomplete="off">
-        </div>
-
-        <button class="btn-main" id="mainBtn" onclick="startEngine()">
-            <span id="btnText">DOWNLOAD NOW</span>
+        <h1>S.V. Downloader</h1>
+        <div class="subtitle">Ultimate Media Saver</div>
+        <input type="text" id="urlInput" placeholder="Paste link (Insta, YT, TikTok)...">
+        <button class="btn-main" id="processBtn" onclick="startDownload()">
+            <span id="btnText">Download Now</span>
             <div class="loader" id="loader"></div>
         </button>
-
-        <div id="status" class="status"></div>
-
+        <div id="status" style="margin-top:10px; font-size:12px; color:#ff4444;"></div>
         <div id="result">
-            <img id="thumb" class="thumb" src="">
-            <div id="links"></div>
+            <img id="thumbImg" class="thumb" src="">
+            <div id="downloadLinks"></div>
+        </div>
+    </div>
+
+    <div class="chat-toggle" onclick="toggleChat()"><i class="fas fa-robot"></i></div>
+    <div class="chat-box" id="chatBox">
+        <div class="chat-header">
+            <span>AI Support</span>
+            <i class="fas fa-times" style="cursor:pointer;" onclick="toggleChat()"></i>
+        </div>
+        <div class="chat-content" id="chatContent">
+            <div class="msg msg-ai">Hello! I am your S.V. Support Bot. How can I help you?</div>
+        </div>
+        <div class="chat-input-area">
+            <input type="text" class="chat-input" id="chatInput" placeholder="Type a message..." onkeypress="if(event.key==='Enter') sendMessage()">
+            <i class="fas fa-paper-plane chat-send" onclick="sendMessage()"></i>
         </div>
     </div>
 
     <script>
-        // --- 1. THE ENGINE ROOM ---
-        
-        // List of Cobalt Mirrors (Engines)
-        const ENGINES = [
-            "https://cobalt-api.ayo.tf/api/json",
-            "https://cobalt.steamship.site/api/json",
-            "https://co.wuk.sh/api/json",
-            "https://cobalt.q13.fr/api/json",
-            "https://api.cobalt.tools/api/json"
-        ];
-
-        // List of Tunnels (To bypass Browser Security)
-        const TUNNELS = [
-            (url) => `https://corsproxy.io/?${encodeURIComponent(url)}`,
-            (url) => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
-            (url) => `https://thingproxy.freeboard.io/fetch/${url}`
-        ];
-
-        async function startEngine() {
+        // --- DOWNLOADER LOGIC ---
+        async function startDownload() {
             const url = document.getElementById('urlInput').value.trim();
-            const btn = document.getElementById('mainBtn');
-            const btnText = document.getElementById('btnText');
+            const btn = document.getElementById('processBtn');
             const loader = document.getElementById('loader');
             const status = document.getElementById('status');
             const result = document.getElementById('result');
 
-            if (!url) {
-                setStatus("Please paste a link first.", "error");
-                return;
-            }
+            if (!url) { status.innerText = "Please paste a link first"; return; }
+            if (url.includes('terabox')) { window.location.href = `https://teraboxdownloader.com/?url=${encodeURIComponent(url)}`; return; }
 
-            // UI Reset
-            setStatus("", "");
-            result.style.display = "none";
-            btnText.style.display = "none";
-            loader.style.display = "block";
-            btn.disabled = true;
+            status.innerText = ""; result.style.display = "none";
+            document.getElementById('btnText').style.display = "none"; loader.style.display = "block"; btn.disabled = true;
 
-            // SPECIAL: TeraBox
-            if (url.includes('terabox') || url.includes('1024tera')) {
-                // Direct redirect for TeraBox (Only exception because no API exists)
-                setTimeout(() => {
-                    window.location.href = `https://teraboxdownloader.com/?url=${encodeURIComponent(url)}`;
-                    resetBtn();
-                }, 1500);
-                return;
-            }
-
-            let success = false;
-
-            // --- THE SWARM LOOP ---
-            // 1. Loop through every Engine
-            for (let engine of ENGINES) {
-                if (success) break;
-
-                // 2. Loop through every Tunnel
-                for (let tunnel of TUNNELS) {
-                    try {
-                        const target = tunnel(engine);
-                        console.log(`Trying: ${target}`);
-
-                        // 3. Clean Payload (No complex settings to avoid 400 error)
-                        const payload = { url: url };
-
-                        const response = await fetch(target, {
-                            method: 'POST',
-                            headers: {
-                                'Accept': 'application/json',
-                                'Content-Type': 'application/json',
-                                'Origin': 'https://cobalt.tools' // Header spoofing
-                            },
-                            body: JSON.stringify(payload)
-                        });
-
-                        const data = await response.json();
-
-                        // 4. Validate Response
-                        if (data.status === 'error' || data.text) {
-                            continue; // Engine specific error, try next
-                        }
-
-                        if (data.url || data.picker) {
-                            showResult(data);
-                            success = true;
-                            break; // Success! Stop looping.
-                        }
-
-                    } catch (e) {
-                        console.log("Tunnel failed, switching...");
-                    }
-                }
-            }
-
-            // --- FAILURE HANDLER ---
-            if (!success) {
-                setStatus("Server Busy. Please try again in 5 seconds.", "error");
-                resetBtn();
-            }
-        }
-
-        function showResult(data) {
-            const result = document.getElementById('result');
-            const thumb = document.getElementById('thumb');
-            const links = document.getElementById('links');
-
-            setStatus("Download Ready!", "success");
-
-            // Set Thumbnail
-            let thumbSrc = "https://via.placeholder.com/400x200/000000/00f2ff?text=Media+Found";
-            if (data.picker && data.picker[0].thumb) thumbSrc = data.picker[0].thumb;
-            else if (data.thumb) thumbSrc = data.thumb;
-            thumb.src = thumbSrc;
-
-            // Generate Buttons
-            links.innerHTML = "";
-
-            if (data.picker) {
-                data.picker.forEach(item => {
-                    createBtn(item.url, item.type === 'video' ? 'Download Video' : 'Download Audio', links);
+            try {
+                const response = await fetch('/process', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ url: url })
                 });
-            } else if (data.url) {
-                createBtn(data.url, 'Download Video', links);
+                const res = await response.json();
+                if (!res.success) throw new Error(res.error);
+
+                document.getElementById('thumbImg').src = res.data.picker?.[0]?.thumb || res.data.thumb || "";
+                const links = document.getElementById('downloadLinks');
+                links.innerHTML = "";
+                
+                const items = res.data.picker || [{url: res.data.url, type: 'video'}];
+                items.forEach(item => {
+                    links.innerHTML += `<a href="${item.url}" class="dl-btn" target="_blank"><i class="fas fa-download"></i> Download ${item.type}</a>`;
+                });
+                result.style.display = "block";
+
+            } catch (e) {
+                status.innerText = e.message || "Failed. Try again.";
+            } finally {
+                btn.disabled = false; loader.style.display = "none"; document.getElementById('btnText').style.display = "block";
             }
-
-            result.style.display = "block";
-            resetBtn();
         }
 
-        function createBtn(url, text, container) {
-            const btn = document.createElement('a');
-            btn.href = url;
-            btn.className = 'dl-btn';
-            btn.target = '_blank';
-            btn.innerHTML = `<i class="fas fa-download"></i> ${text}`;
-            container.appendChild(btn);
+        // --- CHAT LOGIC ---
+        function toggleChat() {
+            const box = document.getElementById('chatBox');
+            box.style.display = box.style.display === 'flex' ? 'none' : 'flex';
         }
 
-        function setStatus(msg, type) {
-            const el = document.getElementById('status');
-            el.innerText = msg;
-            el.className = 'status ' + type;
-        }
+        async function sendMessage() {
+            const input = document.getElementById('chatInput');
+            const msg = input.value.trim();
+            const content = document.getElementById('chatContent');
+            if (!msg) return;
 
-        function resetBtn() {
-            const btn = document.getElementById('mainBtn');
-            const btnText = document.getElementById('btnText');
-            const loader = document.getElementById('loader');
-            btn.disabled = false;
-            loader.style.display = "none";
-            btnText.style.display = "block";
-            btnText.innerText = "DOWNLOAD AGAIN";
+            // Add User Message
+            content.innerHTML += `<div class="msg msg-user">${msg}</div>`;
+            input.value = "";
+            content.scrollTop = content.scrollHeight;
+
+            try {
+                const response = await fetch('/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: msg })
+                });
+                const res = await response.json();
+                content.innerHTML += `<div class="msg msg-ai">${res.text}</div>`;
+            } catch (e) {
+                content.innerHTML += `<div class="msg msg-ai" style="color:red">Connection failed.</div>`;
+            }
+            content.scrollTop = content.scrollHeight;
         }
     </script>
 </body>
