@@ -2,126 +2,204 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>S.V. Premium Downloader</title>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    <title>S.V. Ultimate Downloader</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
-        /* --- THEME --- */
-        :root { --primary: #00f2ff; --bg: #050505; --glass: rgba(255, 255, 255, 0.05); }
-        body { margin: 0; font-family: 'Inter', sans-serif; background: var(--bg); color: white; height: 100vh; overflow: hidden; display: flex; justify-content: center; align-items: center; 
-               background-image: radial-gradient(circle at 10% 20%, rgba(0, 242, 255, 0.15) 0%, transparent 40%), radial-gradient(circle at 90% 80%, rgba(255, 0, 85, 0.15) 0%, transparent 40%); }
-
-        /* --- MAIN CARD --- */
-        .card { background: var(--glass); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.1); border-radius: 24px; padding: 2.5rem; width: 90%; max-width: 420px; text-align: center; position: relative; z-index: 10; }
-        h1 { background: linear-gradient(135deg, #fff, var(--primary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin: 0; }
-        .subtitle { color: #888; font-size: 12px; margin-bottom: 30px; letter-spacing: 2px; text-transform: uppercase; }
+        :root { --primary: #00f2ff; --bg: #050510; --glass: rgba(20, 20, 40, 0.8); --border: rgba(255, 255, 255, 0.1); }
+        body { margin: 0; font-family: 'Segoe UI', sans-serif; background: var(--bg); color: white; height: 100vh; display: flex; justify-content: center; align-items: center; overflow: hidden; background-image: radial-gradient(circle at 10% 20%, rgba(0, 242, 255, 0.1) 0%, transparent 40%), radial-gradient(circle at 90% 80%, rgba(188, 19, 254, 0.1) 0%, transparent 40%); }
         
-        input { width: 100%; background: rgba(0,0,0,0.3); border: 2px solid rgba(255,255,255,0.1); padding: 16px; border-radius: 16px; color: white; outline: none; box-sizing: border-box; margin-bottom: 20px; transition: 0.3s; }
-        input:focus { border-color: var(--primary); background: rgba(0,0,0,0.5); }
+        /* CARD UI */
+        .card { background: var(--glass); backdrop-filter: blur(20px); border: 1px solid var(--border); width: 90%; max-width: 420px; padding: 2rem; border-radius: 24px; text-align: center; position: relative; box-shadow: 0 0 50px rgba(0,0,0,0.5); }
+        h1 { font-weight: 900; font-size: 28px; margin: 0 0 5px 0; background: linear-gradient(to right, #fff, var(--primary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .subtitle { color: #889; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 25px; }
         
-        .btn-main { width: 100%; padding: 18px; border-radius: 16px; border: none; background: linear-gradient(135deg, var(--primary), #00aaff); color: #000; font-weight: 800; cursor: pointer; text-transform: uppercase; transition: 0.3s; }
-        .btn-main:hover { transform: translateY(-3px); box-shadow: 0 0 20px rgba(0, 242, 255, 0.4); }
-        .btn-main:disabled { background: #555; cursor: not-allowed; }
+        input { width: 100%; padding: 16px; background: rgba(0,0,0,0.4); border: 2px solid var(--border); border-radius: 16px; color: #fff; font-size: 16px; outline: none; box-sizing: border-box; margin-bottom: 20px; transition: 0.3s; }
+        input:focus { border-color: var(--primary); background: rgba(0,0,0,0.6); }
+        
+        .btn-main { width: 100%; padding: 16px; border: none; border-radius: 16px; background: linear-gradient(135deg, var(--primary), #0066ff); color: #000; font-weight: 800; font-size: 16px; text-transform: uppercase; cursor: pointer; transition: 0.3s; }
+        .btn-main:disabled { background: #333; color: #666; cursor: not-allowed; }
+        .btn-main:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 0 20px rgba(0, 243, 255, 0.4); }
 
-        .loader { display: none; margin: 0 auto; width: 24px; height: 24px; border: 3px solid rgba(0,0,0,0.3); border-top: 3px solid #000; border-radius: 50%; animation: spin 1s linear infinite; }
+        .loader { display: none; width: 24px; height: 24px; border: 3px solid rgba(0,0,0,0.3); border-top: 3px solid #000; border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        #result { display: none; margin-top: 20px; }
-        .thumb { width: 100%; height: 180px; border-radius: 16px; object-fit: cover; margin-bottom: 15px; border: 1px solid rgba(255,255,255,0.1); }
-        .dl-btn { display: block; background: #1a1a1f; border: 1px solid var(--primary); color: var(--primary); padding: 15px; text-decoration: none; border-radius: 12px; font-weight: bold; margin-bottom: 10px; transition: 0.3s; }
-        .dl-btn:hover { background: var(--primary); color: #000; }
-        
-        /* --- CHAT WIDGET --- */
-        .chat-toggle { position: fixed; bottom: 20px; right: 20px; width: 60px; height: 60px; background: var(--primary); border-radius: 50%; display: flex; justify-content: center; align-items: center; cursor: pointer; box-shadow: 0 0 20px rgba(0, 242, 255, 0.3); z-index: 100; transition: 0.3s; color: black; font-size: 24px; }
-        .chat-toggle:hover { transform: scale(1.1); }
-        
-        .chat-box { position: fixed; bottom: 90px; right: 20px; width: 300px; height: 400px; background: rgba(10, 10, 15, 0.95); backdrop-filter: blur(20px); border: 1px solid var(--primary); border-radius: 20px; display: none; flex-direction: column; overflow: hidden; z-index: 100; box-shadow: 0 0 30px rgba(0,0,0,0.8); }
-        .chat-header { background: var(--primary); color: black; padding: 15px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; }
-        .chat-content { flex: 1; padding: 15px; overflow-y: auto; font-size: 13px; display: flex; flex-direction: column; gap: 10px; }
-        .msg { padding: 8px 12px; border-radius: 10px; max-width: 80%; }
-        .msg-user { background: rgba(255,255,255,0.1); align-self: flex-end; color: white; }
-        .msg-ai { background: rgba(0, 242, 255, 0.2); align-self: flex-start; color: var(--primary); border: 1px solid rgba(0, 242, 255, 0.3); }
-        
-        .chat-input-area { display: flex; border-top: 1px solid rgba(255,255,255,0.1); padding: 10px; }
-        .chat-input { flex: 1; background: transparent; border: none; color: white; outline: none; padding: 5px; }
-        .chat-send { color: var(--primary); cursor: pointer; font-size: 18px; margin-left: 10px; }
+        #result { display: none; margin-top: 25px; animation: fadeIn 0.5s ease; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .thumb { width: 100%; height: 200px; border-radius: 16px; object-fit: cover; border: 1px solid var(--border); margin-bottom: 15px; }
+        .dl-btn { display: flex; align-items: center; justify-content: center; width: 100%; padding: 14px; margin-bottom: 10px; background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: 12px; color: #fff; text-decoration: none; font-weight: 600; transition: 0.3s; box-sizing: border-box; }
+        .dl-btn:hover { background: var(--primary); color: #000; border-color: var(--primary); }
+        .status { margin-top: 15px; font-size: 12px; min-height: 20px; color: #ff4466; }
 
+        /* CHAT */
+        .chat-toggle { position: fixed; bottom: 20px; right: 20px; width: 55px; height: 55px; background: var(--primary); border-radius: 50%; display: flex; justify-content: center; align-items: center; cursor: pointer; box-shadow: 0 0 20px rgba(0, 242, 255, 0.4); color: #000; font-size: 24px; z-index: 100; }
+        .chat-box { position: fixed; bottom: 85px; right: 20px; width: 300px; height: 400px; background: #0a0a12; border: 1px solid var(--primary); border-radius: 20px; display: none; flex-direction: column; overflow: hidden; z-index: 100; }
+        .chat-content { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
+        .msg { padding: 8px 12px; border-radius: 10px; max-width: 80%; font-size: 13px; }
+        .msg-user { background: #222; align-self: flex-end; color: white; }
+        .msg-ai { background: rgba(0, 242, 255, 0.15); align-self: flex-start; color: var(--primary); }
+        .chat-input-area { display: flex; border-top: 1px solid #333; padding: 10px; }
+        .chat-input { flex: 1; background: transparent; border: none; color: white; outline: none; }
+        .chat-send { color: var(--primary); cursor: pointer; font-size: 18px; margin-left: 10px; }
     </style>
 </head>
 <body>
 
     <div class="card">
-        <h1>S.V. Downloader</h1>
-        <div class="subtitle">Ultimate Media Saver</div>
-        <input type="text" id="urlInput" placeholder="Paste link (Insta, YT, TikTok)...">
-        <button class="btn-main" id="processBtn" onclick="startDownload()">
-            <span id="btnText">Download Now</span>
+        <h1>S.V. DOWNLOADER</h1>
+        <div class="subtitle">Premium Media Saver</div>
+        <input type="text" id="urlInput" placeholder="Paste link (Insta, YT, TikTok)..." autocomplete="off">
+        <button class="btn-main" id="mainBtn" onclick="startSwarm()">
+            <span id="btnText">DOWNLOAD NOW</span>
             <div class="loader" id="loader"></div>
         </button>
-        <div id="status" style="margin-top:10px; font-size:12px; color:#ff4444;"></div>
+        <div id="status" class="status"></div>
         <div id="result">
-            <img id="thumbImg" class="thumb" src="">
-            <div id="downloadLinks"></div>
+            <img id="thumb" class="thumb" src="">
+            <div id="links"></div>
         </div>
     </div>
 
-    <div class="chat-toggle" onclick="toggleChat()"><i class="fas fa-robot"></i></div>
+    <div class="chat-toggle" onclick="toggleChat()"><i class="fas fa-comment-dots"></i></div>
     <div class="chat-box" id="chatBox">
-        <div class="chat-header">
-            <span>AI Support</span>
-            <i class="fas fa-times" style="cursor:pointer;" onclick="toggleChat()"></i>
-        </div>
-        <div class="chat-content" id="chatContent">
-            <div class="msg msg-ai">Hello! I am your S.V. Support Bot. How can I help you?</div>
-        </div>
+        <div class="chat-content" id="chatContent"><div class="msg msg-ai">Hi! I am S.V. Support. Need help?</div></div>
         <div class="chat-input-area">
-            <input type="text" class="chat-input" id="chatInput" placeholder="Type a message..." onkeypress="if(event.key==='Enter') sendMessage()">
+            <input type="text" class="chat-input" id="chatInput" placeholder="Type here..." onkeypress="if(event.key==='Enter') sendMessage()">
             <i class="fas fa-paper-plane chat-send" onclick="sendMessage()"></i>
         </div>
     </div>
 
     <script>
-        // --- DOWNLOADER LOGIC ---
-        async function startDownload() {
+        // --- 1. THE POWERFUL API LIST ---
+        // These are the best community instances available right now.
+        const APIS = [
+            "https://cobalt.steamship.site/api/json",
+            "https://cobalt-api.ayo.tf/api/json",
+            "https://co.wuk.sh/api/json",
+            "https://cobalt.q13.fr/api/json",
+            "https://cobalt.rudart.cc/api/json",
+            "https://api.cobalt.tools/api/json",
+            "https://cobalt.kwiatekmiki.pl/api/json"
+        ];
+
+        // --- 2. THE PROXY TUNNELS ---
+        // If direct connection fails, we tunnel through these.
+        const TUNNELS = [
+            (url) => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
+            (url) => `https://corsproxy.io/?${encodeURIComponent(url)}`,
+            (url) => `https://thingproxy.freeboard.io/fetch/${url}`
+        ];
+
+        async function startSwarm() {
             const url = document.getElementById('urlInput').value.trim();
-            const btn = document.getElementById('processBtn');
+            const btn = document.getElementById('mainBtn');
             const loader = document.getElementById('loader');
             const status = document.getElementById('status');
             const result = document.getElementById('result');
 
-            if (!url) { status.innerText = "Please paste a link first"; return; }
-            if (url.includes('terabox')) { window.location.href = `https://teraboxdownloader.com/?url=${encodeURIComponent(url)}`; return; }
+            if (!url) { status.innerText = "Please paste a link first."; return; }
 
+            // UI RESET
             status.innerText = ""; result.style.display = "none";
-            document.getElementById('btnText').style.display = "none"; loader.style.display = "block"; btn.disabled = true;
+            document.getElementById('btnText').style.display = "none";
+            loader.style.display = "block"; btn.disabled = true;
 
-            try {
-                const response = await fetch('/process', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ url: url })
-                });
-                const res = await response.json();
-                if (!res.success) throw new Error(res.error);
+            // SPECIAL: TERABOX HANDLING
+            if (url.includes('terabox') || url.includes('1024tera')) {
+                setTimeout(() => {
+                    window.location.href = `https://teraboxdownloader.com/?url=${encodeURIComponent(url)}`;
+                    resetBtn();
+                }, 1500);
+                return;
+            }
 
-                document.getElementById('thumbImg').src = res.data.picker?.[0]?.thumb || res.data.thumb || "";
-                const links = document.getElementById('downloadLinks');
-                links.innerHTML = "";
-                
-                const items = res.data.picker || [{url: res.data.url, type: 'video'}];
-                items.forEach(item => {
-                    links.innerHTML += `<a href="${item.url}" class="dl-btn" target="_blank"><i class="fas fa-download"></i> Download ${item.type}</a>`;
-                });
-                result.style.display = "block";
+            // START THE SWARM
+            let success = false;
 
-            } catch (e) {
-                status.innerText = e.message || "Failed. Try again.";
-            } finally {
-                btn.disabled = false; loader.style.display = "none"; document.getElementById('btnText').style.display = "block";
+            // Loop 1: Try every API
+            for (let api of APIS) {
+                if (success) break;
+
+                // Loop 2: Try every Tunnel for that API
+                for (let tunnel of TUNNELS) {
+                    try {
+                        console.log(`Trying ${api}...`);
+                        
+                        // We use a simplified payload to avoid 400 Errors
+                        const targetUrl = tunnel(api);
+                        
+                        const response = await fetch(targetUrl, {
+                            method: 'POST',
+                            headers: {
+                                'Accept': 'application/json',
+                                'Content-Type': 'application/json',
+                                'Origin': 'https://cobalt.tools' // Header Spoofing
+                            },
+                            body: JSON.stringify({ url: url })
+                        });
+
+                        const data = await response.json();
+                        
+                        // Check if valid
+                        if (data.status === 'error' || data.text) continue;
+
+                        if (data.url || data.picker) {
+                            showSuccess(data);
+                            success = true;
+                            break;
+                        }
+                    } catch (e) {
+                        continue;
+                    }
+                }
+            }
+
+            if (!success) {
+                status.innerText = "All servers are currently busy. Please wait 30 seconds.";
+                resetBtn();
             }
         }
 
-        // --- CHAT LOGIC ---
+        function showSuccess(data) {
+            const result = document.getElementById('result');
+            const thumb = document.getElementById('thumb');
+            const links = document.getElementById('links');
+
+            // Thumbnail
+            let tUrl = "https://via.placeholder.com/400x200/000000/00f2ff?text=Media+Found";
+            if (data.picker && data.picker[0].thumb) tUrl = data.picker[0].thumb;
+            else if (data.thumb) tUrl = data.thumb;
+            thumb.src = tUrl;
+
+            // Buttons
+            links.innerHTML = "";
+            if (data.picker) {
+                data.picker.forEach(item => createBtn(item.url, item.type, links));
+            } else if (data.url) {
+                createBtn(data.url, 'video', links);
+            }
+
+            result.style.display = "block";
+            resetBtn();
+        }
+
+        function createBtn(url, type, container) {
+            const btn = document.createElement('a');
+            btn.href = url;
+            btn.className = 'dl-btn';
+            btn.target = '_blank';
+            btn.innerHTML = `<i class="fas fa-download"></i> Download ${type === 'video' ? 'Video' : 'Audio'}`;
+            container.appendChild(btn);
+        }
+
+        function resetBtn() {
+            const btn = document.getElementById('mainBtn');
+            const loader = document.getElementById('loader');
+            btn.disabled = false; loader.style.display = "none";
+            document.getElementById('btnText').style.display = "block";
+        }
+
+        // CHAT FUNCTIONS
         function toggleChat() {
             const box = document.getElementById('chatBox');
             box.style.display = box.style.display === 'flex' ? 'none' : 'flex';
@@ -133,10 +211,8 @@
             const content = document.getElementById('chatContent');
             if (!msg) return;
 
-            // Add User Message
             content.innerHTML += `<div class="msg msg-user">${msg}</div>`;
-            input.value = "";
-            content.scrollTop = content.scrollHeight;
+            input.value = ""; content.scrollTop = content.scrollHeight;
 
             try {
                 const response = await fetch('/chat', {
@@ -147,7 +223,7 @@
                 const res = await response.json();
                 content.innerHTML += `<div class="msg msg-ai">${res.text}</div>`;
             } catch (e) {
-                content.innerHTML += `<div class="msg msg-ai" style="color:red">Connection failed.</div>`;
+                content.innerHTML += `<div class="msg msg-ai" style="color:red">Error connecting.</div>`;
             }
             content.scrollTop = content.scrollHeight;
         }
