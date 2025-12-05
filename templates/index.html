@@ -1,232 +1,397 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-    <title>S.V. Ultimate Downloader</title>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <style>
-        :root { --primary: #00f2ff; --bg: #050510; --glass: rgba(20, 20, 40, 0.8); --border: rgba(255, 255, 255, 0.1); }
-        body { margin: 0; font-family: 'Segoe UI', sans-serif; background: var(--bg); color: white; height: 100vh; display: flex; justify-content: center; align-items: center; overflow: hidden; background-image: radial-gradient(circle at 10% 20%, rgba(0, 242, 255, 0.1) 0%, transparent 40%), radial-gradient(circle at 90% 80%, rgba(188, 19, 254, 0.1) 0%, transparent 40%); }
-        
-        /* CARD UI */
-        .card { background: var(--glass); backdrop-filter: blur(20px); border: 1px solid var(--border); width: 90%; max-width: 420px; padding: 2rem; border-radius: 24px; text-align: center; position: relative; box-shadow: 0 0 50px rgba(0,0,0,0.5); }
-        h1 { font-weight: 900; font-size: 28px; margin: 0 0 5px 0; background: linear-gradient(to right, #fff, var(--primary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        .subtitle { color: #889; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 25px; }
-        
-        input { width: 100%; padding: 16px; background: rgba(0,0,0,0.4); border: 2px solid var(--border); border-radius: 16px; color: #fff; font-size: 16px; outline: none; box-sizing: border-box; margin-bottom: 20px; transition: 0.3s; }
-        input:focus { border-color: var(--primary); background: rgba(0,0,0,0.6); }
-        
-        .btn-main { width: 100%; padding: 16px; border: none; border-radius: 16px; background: linear-gradient(135deg, var(--primary), #0066ff); color: #000; font-weight: 800; font-size: 16px; text-transform: uppercase; cursor: pointer; transition: 0.3s; }
-        .btn-main:disabled { background: #333; color: #666; cursor: not-allowed; }
-        .btn-main:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 0 20px rgba(0, 243, 255, 0.4); }
+  <meta charset="UTF-8" />
+  <title>Neon Disco Piano Pad</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-        .loader { display: none; width: 24px; height: 24px; border: 3px solid rgba(0,0,0,0.3); border-top: 3px solid #000; border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+  <style>
+    :root {
+      --neon-pink:  #ff00ff;
+      --neon-cyan:  #00fff6;
+      --neon-blue:  #4d6bff;
+      --neon-yellow:#ffe600;
+      --neon-green: #39ff14;
+    }
 
-        #result { display: none; margin-top: 25px; animation: fadeIn 0.5s ease; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        .thumb { width: 100%; height: 200px; border-radius: 16px; object-fit: cover; border: 1px solid var(--border); margin-bottom: 15px; }
-        .dl-btn { display: flex; align-items: center; justify-content: center; width: 100%; padding: 14px; margin-bottom: 10px; background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: 12px; color: #fff; text-decoration: none; font-weight: 600; transition: 0.3s; box-sizing: border-box; }
-        .dl-btn:hover { background: var(--primary); color: #000; border-color: var(--primary); }
-        .status { margin-top: 15px; font-size: 12px; min-height: 20px; color: #ff4466; }
+    * {
+      box-sizing: border-box;
+    }
 
-        /* CHAT */
-        .chat-toggle { position: fixed; bottom: 20px; right: 20px; width: 55px; height: 55px; background: var(--primary); border-radius: 50%; display: flex; justify-content: center; align-items: center; cursor: pointer; box-shadow: 0 0 20px rgba(0, 242, 255, 0.4); color: #000; font-size: 24px; z-index: 100; }
-        .chat-box { position: fixed; bottom: 85px; right: 20px; width: 300px; height: 400px; background: #0a0a12; border: 1px solid var(--primary); border-radius: 20px; display: none; flex-direction: column; overflow: hidden; z-index: 100; }
-        .chat-content { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
-        .msg { padding: 8px 12px; border-radius: 10px; max-width: 80%; font-size: 13px; }
-        .msg-user { background: #222; align-self: flex-end; color: white; }
-        .msg-ai { background: rgba(0, 242, 255, 0.15); align-self: flex-start; color: var(--primary); }
-        .chat-input-area { display: flex; border-top: 1px solid #333; padding: 10px; }
-        .chat-input { flex: 1; background: transparent; border: none; color: white; outline: none; }
-        .chat-send { color: var(--primary); cursor: pointer; font-size: 18px; margin-left: 10px; }
-    </style>
+    body {
+      margin: 0;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      color: white;
+      overflow: hidden;
+      background: radial-gradient(circle at top, #111 0, #000 55%, #020010 100%);
+      animation: bgPulse 4s linear infinite;
+    }
+
+    /* Continuous disco background animation */
+    @keyframes bgPulse {
+      0%   { background: radial-gradient(circle at top, #111 0, #000 55%, #020010 100%); }
+      25%  { background: radial-gradient(circle at top, #19001f 0, #050018 55%, #000010 100%); }
+      50%  { background: radial-gradient(circle at top, #001a21 0, #00051a 55%, #000010 100%); }
+      75%  { background: radial-gradient(circle at top, #1a1a00 0, #070018 55%, #000010 100%); }
+      100% { background: radial-gradient(circle at top, #111 0, #000 55%, #020010 100%); }
+    }
+
+    .scanlines {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background-image: repeating-linear-gradient(
+        to bottom,
+        rgba(255, 255, 255, 0.06) 0,
+        rgba(255, 255, 255, 0.06) 1px,
+        transparent 1px,
+        transparent 3px
+      );
+      mix-blend-mode: overlay;
+      opacity: 0.25;
+      animation: scan 6s linear infinite;
+    }
+
+    @keyframes scan {
+      0%   { transform: translateY(-20px); }
+      100% { transform: translateY(20px); }
+    }
+
+    .center-wrapper {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      padding: 16px;
+    }
+
+    .title {
+      text-align: center;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      font-size: clamp(20px, 4vw, 32px);
+      text-shadow:
+        0 0 8px var(--neon-pink),
+        0 0 16px var(--neon-cyan),
+        0 0 24px var(--neon-blue);
+      animation: titleGlow 2s ease-in-out infinite alternate;
+    }
+
+    @keyframes titleGlow {
+      0% {
+        text-shadow:
+          0 0 4px var(--neon-pink),
+          0 0 8px var(--neon-cyan),
+          0 0 12px var(--neon-blue);
+      }
+      100% {
+        text-shadow:
+          0 0 12px var(--neon-pink),
+          0 0 24px var(--neon-cyan),
+          0 0 36px var(--neon-blue);
+      }
+    }
+
+    .pad-board {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(70px, 110px));
+      gap: 16px;
+      padding: 20px;
+      border-radius: 24px;
+      background: rgba(3, 3, 20, 0.7);
+      backdrop-filter: blur(14px);
+      box-shadow:
+        0 0 25px rgba(0, 255, 255, 0.3),
+        0 0 60px rgba(255, 0, 255, 0.3);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .pad-board::before,
+    .pad-board::after {
+      content: "";
+      position: absolute;
+      inset: -60%;
+      background: conic-gradient(
+        from 0deg,
+        rgba(255, 0, 255, 0.75),
+        rgba(0, 255, 255, 0.75),
+        rgba(0, 255, 0, 0.75),
+        rgba(255, 255, 0, 0.75),
+        rgba(255, 0, 255, 0.75)
+      );
+      animation: spin 12s linear infinite;
+      opacity: 0.25;
+      z-index: -2;
+    }
+
+    .pad-board::after {
+      filter: blur(40px);
+      opacity: 0.45;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .pad {
+      border-radius: 18px;
+      border: 2px solid rgba(255, 255, 255, 0.2);
+      position: relative;
+      cursor: pointer;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      padding-bottom: 10px;
+      font-size: 14px;
+      text-transform: uppercase;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      text-shadow: 0 0 5px rgba(0,0,0,0.7);
+      overflow: hidden;
+      background-size: 200% 200%;
+      box-shadow:
+        0 0 10px rgba(0, 0, 0, 0.9),
+        0 0 20px rgba(0, 0, 0, 0.9);
+      transform: translateY(0);
+      transition:
+        transform 0.09s ease,
+        box-shadow 0.09s ease,
+        border-color 0.09s ease;
+    }
+
+    .pad::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at top, rgba(255,255,255,0.65), transparent 70%);
+      mix-blend-mode: screen;
+      opacity: 0.9;
+      pointer-events: none;
+    }
+
+    /* Each pad gets its own neon gradient + blinking animation */
+    .pad:nth-child(1)  { background-image: linear-gradient(135deg, #ff008c, #ffdd00); animation: padGlow1 1.1s infinite alternate; }
+    .pad:nth-child(2)  { background-image: linear-gradient(135deg, #00f0ff, #0066ff); animation: padGlow2 1.3s infinite alternate; }
+    .pad:nth-child(3)  { background-image: linear-gradient(135deg, #39ff14, #00d4ff); animation: padGlow3 1.2s infinite alternate; }
+    .pad:nth-child(4)  { background-image: linear-gradient(135deg, #ff00ff, #7f00ff); animation: padGlow4 1.4s infinite alternate; }
+    .pad:nth-child(5)  { background-image: linear-gradient(135deg, #ff6a00, #ffe600); animation: padGlow1 1.6s infinite alternate-reverse; }
+    .pad:nth-child(6)  { background-image: linear-gradient(135deg, #00ffc3, #00f);    animation: padGlow2 1.8s infinite alternate-reverse; }
+    .pad:nth-child(7)  { background-image: linear-gradient(135deg, #ff00aa, #00ff99); animation: padGlow3 1.7s infinite alternate-reverse; }
+    .pad:nth-child(8)  { background-image: linear-gradient(135deg, #00f0ff, #ff00f7); animation: padGlow4 1.9s infinite alternate-reverse; }
+
+    @keyframes padGlow1 {
+      0% {
+        box-shadow:
+          0 0 10px rgba(255, 0, 140, 0.6),
+          0 0 25px rgba(255, 221, 0, 0.6);
+      }
+      100% {
+        box-shadow:
+          0 0 25px rgba(255, 0, 140, 1),
+          0 0 55px rgba(255, 221, 0, 1);
+      }
+    }
+
+    @keyframes padGlow2 {
+      0% {
+        box-shadow:
+          0 0 10px rgba(0, 240, 255, 0.6),
+          0 0 25px rgba(0, 102, 255, 0.6);
+      }
+      100% {
+        box-shadow:
+          0 0 25px rgba(0, 240, 255, 1),
+          0 0 55px rgba(0, 102, 255, 1);
+      }
+    }
+
+    @keyframes padGlow3 {
+      0% {
+        box-shadow:
+          0 0 10px rgba(57, 255, 20, 0.6),
+          0 0 25px rgba(0, 212, 255, 0.6);
+      }
+      100% {
+        box-shadow:
+          0 0 25px rgba(57, 255, 20, 1),
+          0 0 55px rgba(0, 212, 255, 1);
+      }
+    }
+
+    @keyframes padGlow4 {
+      0% {
+        box-shadow:
+          0 0 10px rgba(255, 0, 255, 0.6),
+          0 0 25px rgba(127, 0, 255, 0.6);
+      }
+      100% {
+        box-shadow:
+          0 0 25px rgba(255, 0, 255, 1),
+          0 0 55px rgba(127, 0, 255, 1);
+      }
+    }
+
+    .pad.active {
+      transform: translateY(4px);
+      box-shadow:
+        0 0 5px rgba(0, 0, 0, 0.9),
+        0 0 20px rgba(255, 255, 255, 0.9);
+      border-color: rgba(255, 255, 255, 0.8);
+    }
+
+    .small-label {
+      font-size: 11px;
+      opacity: 0.9;
+    }
+
+    .bottom-info {
+      text-align: center;
+      font-size: 12px;
+      opacity: 0.9;
+    }
+
+    .bottom-info span.key {
+      padding: 2px 5px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.4);
+      margin: 0 2px;
+      font-size: 11px;
+    }
+
+    @media (max-width: 520px) {
+      .pad-board {
+        grid-template-columns: repeat(2, minmax(80px, 120px));
+      }
+    }
+  </style>
 </head>
 <body>
+  <div class="scanlines"></div>
 
-    <div class="card">
-        <h1>S.V. DOWNLOADER</h1>
-        <div class="subtitle">Premium Media Saver</div>
-        <input type="text" id="urlInput" placeholder="Paste link (Insta, YT, TikTok)..." autocomplete="off">
-        <button class="btn-main" id="mainBtn" onclick="startSwarm()">
-            <span id="btnText">DOWNLOAD NOW</span>
-            <div class="loader" id="loader"></div>
-        </button>
-        <div id="status" class="status"></div>
-        <div id="result">
-            <img id="thumb" class="thumb" src="">
-            <div id="links"></div>
-        </div>
+  <div class="center-wrapper">
+    <div class="title">Neon Disco Piano Pad</div>
+
+    <div class="pad-board">
+      <div class="pad" data-note="0">
+        <div class="small-label">C</div>
+      </div>
+      <div class="pad" data-note="1">
+        <div class="small-label">D</div>
+      </div>
+      <div class="pad" data-note="2">
+        <div class="small-label">E</div>
+      </div>
+      <div class="pad" data-note="3">
+        <div class="small-label">F</div>
+      </div>
+      <div class="pad" data-note="4">
+        <div class="small-label">G</div>
+      </div>
+      <div class="pad" data-note="5">
+        <div class="small-label">A</div>
+      </div>
+      <div class="pad" data-note="6">
+        <div class="small-label">B</div>
+      </div>
+      <div class="pad" data-note="7">
+        <div class="small-label">C↑</div>
+      </div>
     </div>
 
-    <div class="chat-toggle" onclick="toggleChat()"><i class="fas fa-comment-dots"></i></div>
-    <div class="chat-box" id="chatBox">
-        <div class="chat-content" id="chatContent"><div class="msg msg-ai">Hi! I am S.V. Support. Need help?</div></div>
-        <div class="chat-input-area">
-            <input type="text" class="chat-input" id="chatInput" placeholder="Type here..." onkeypress="if(event.key==='Enter') sendMessage()">
-            <i class="fas fa-paper-plane chat-send" onclick="sendMessage()"></i>
-        </div>
+    <div class="bottom-info">
+      Click / tap the pads or use keys
+      <span class="key">A</span>
+      <span class="key">S</span>
+      <span class="key">D</span>
+      <span class="key">F</span>
+      <span class="key">J</span>
+      <span class="key">K</span>
+      <span class="key">L</span>
+      <span class="key">;</span>
     </div>
+  </div>
 
-    <script>
-        // --- 1. THE POWERFUL API LIST ---
-        // These are the best community instances available right now.
-        const APIS = [
-            "https://cobalt.steamship.site/api/json",
-            "https://cobalt-api.ayo.tf/api/json",
-            "https://co.wuk.sh/api/json",
-            "https://cobalt.q13.fr/api/json",
-            "https://cobalt.rudart.cc/api/json",
-            "https://api.cobalt.tools/api/json",
-            "https://cobalt.kwiatekmiki.pl/api/json"
-        ];
+  <script>
+    // Simple Web Audio "piano" using sine waves
+    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+    const audioCtx = new AudioContextClass();
 
-        // --- 2. THE PROXY TUNNELS ---
-        // If direct connection fails, we tunnel through these.
-        const TUNNELS = [
-            (url) => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
-            (url) => `https://corsproxy.io/?${encodeURIComponent(url)}`,
-            (url) => `https://thingproxy.freeboard.io/fetch/${url}`
-        ];
+    // Frequencies (roughly piano C major scale)
+    const NOTES = [
+      261.63, // C4
+      293.66, // D4
+      329.63, // E4
+      349.23, // F4
+      392.00, // G4
+      440.00, // A4
+      493.88, // B4
+      523.25  // C5
+    ];
 
-        async function startSwarm() {
-            const url = document.getElementById('urlInput').value.trim();
-            const btn = document.getElementById('mainBtn');
-            const loader = document.getElementById('loader');
-            const status = document.getElementById('status');
-            const result = document.getElementById('result');
+    function playNote(freq) {
+      const now = audioCtx.currentTime;
 
-            if (!url) { status.innerText = "Please paste a link first."; return; }
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
 
-            // UI RESET
-            status.innerText = ""; result.style.display = "none";
-            document.getElementById('btnText').style.display = "none";
-            loader.style.display = "block"; btn.disabled = true;
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(freq, now);
 
-            // SPECIAL: TERABOX HANDLING
-            if (url.includes('terabox') || url.includes('1024tera')) {
-                setTimeout(() => {
-                    window.location.href = `https://teraboxdownloader.com/?url=${encodeURIComponent(url)}`;
-                    resetBtn();
-                }, 1500);
-                return;
-            }
+      gain.gain.setValueAtTime(0.0, now);
+      gain.gain.linearRampToValueAtTime(0.5, now + 0.01);     // quick attack
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.6); // release
 
-            // START THE SWARM
-            let success = false;
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
 
-            // Loop 1: Try every API
-            for (let api of APIS) {
-                if (success) break;
+      osc.start(now);
+      osc.stop(now + 0.7);
+    }
 
-                // Loop 2: Try every Tunnel for that API
-                for (let tunnel of TUNNELS) {
-                    try {
-                        console.log(`Trying ${api}...`);
-                        
-                        // We use a simplified payload to avoid 400 Errors
-                        const targetUrl = tunnel(api);
-                        
-                        const response = await fetch(targetUrl, {
-                            method: 'POST',
-                            headers: {
-                                'Accept': 'application/json',
-                                'Content-Type': 'application/json',
-                                'Origin': 'https://cobalt.tools' // Header Spoofing
-                            },
-                            body: JSON.stringify({ url: url })
-                        });
+    const pads = document.querySelectorAll(".pad");
+    const keyMap = {
+      "a": 0,
+      "s": 1,
+      "d": 2,
+      "f": 3,
+      "j": 4,
+      "k": 5,
+      "l": 6,
+      ";": 7
+    };
 
-                        const data = await response.json();
-                        
-                        // Check if valid
-                        if (data.status === 'error' || data.text) continue;
+    function triggerPad(index) {
+      const pad = pads[index];
+      if (!pad) return;
+      const freq = NOTES[index];
+      playNote(freq);
 
-                        if (data.url || data.picker) {
-                            showSuccess(data);
-                            success = true;
-                            break;
-                        }
-                    } catch (e) {
-                        continue;
-                    }
-                }
-            }
+      pad.classList.add("active");
+      setTimeout(() => pad.classList.remove("active"), 120);
+    }
 
-            if (!success) {
-                status.innerText = "All servers are currently busy. Please wait 30 seconds.";
-                resetBtn();
-            }
-        }
+    pads.forEach(pad => {
+      pad.addEventListener("click", () => {
+        const noteIndex = parseInt(pad.getAttribute("data-note"), 10);
+        triggerPad(noteIndex);
+      });
+    });
 
-        function showSuccess(data) {
-            const result = document.getElementById('result');
-            const thumb = document.getElementById('thumb');
-            const links = document.getElementById('links');
-
-            // Thumbnail
-            let tUrl = "https://via.placeholder.com/400x200/000000/00f2ff?text=Media+Found";
-            if (data.picker && data.picker[0].thumb) tUrl = data.picker[0].thumb;
-            else if (data.thumb) tUrl = data.thumb;
-            thumb.src = tUrl;
-
-            // Buttons
-            links.innerHTML = "";
-            if (data.picker) {
-                data.picker.forEach(item => createBtn(item.url, item.type, links));
-            } else if (data.url) {
-                createBtn(data.url, 'video', links);
-            }
-
-            result.style.display = "block";
-            resetBtn();
-        }
-
-        function createBtn(url, type, container) {
-            const btn = document.createElement('a');
-            btn.href = url;
-            btn.className = 'dl-btn';
-            btn.target = '_blank';
-            btn.innerHTML = `<i class="fas fa-download"></i> Download ${type === 'video' ? 'Video' : 'Audio'}`;
-            container.appendChild(btn);
-        }
-
-        function resetBtn() {
-            const btn = document.getElementById('mainBtn');
-            const loader = document.getElementById('loader');
-            btn.disabled = false; loader.style.display = "none";
-            document.getElementById('btnText').style.display = "block";
-        }
-
-        // CHAT FUNCTIONS
-        function toggleChat() {
-            const box = document.getElementById('chatBox');
-            box.style.display = box.style.display === 'flex' ? 'none' : 'flex';
-        }
-
-        async function sendMessage() {
-            const input = document.getElementById('chatInput');
-            const msg = input.value.trim();
-            const content = document.getElementById('chatContent');
-            if (!msg) return;
-
-            content.innerHTML += `<div class="msg msg-user">${msg}</div>`;
-            input.value = ""; content.scrollTop = content.scrollHeight;
-
-            try {
-                const response = await fetch('/chat', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ message: msg })
-                });
-                const res = await response.json();
-                content.innerHTML += `<div class="msg msg-ai">${res.text}</div>`;
-            } catch (e) {
-                content.innerHTML += `<div class="msg msg-ai" style="color:red">Error connecting.</div>`;
-            }
-            content.scrollTop = content.scrollHeight;
-        }
-    </script>
+    // Keyboard control
+    window.addEventListener("keydown", (e) => {
+      const key = e.key.toLowerCase();
+      if (keyMap[key] !== undefined) {
+        triggerPad(keyMap[key]);
+      }
+    });
+  </script>
 </body>
 </html>
